@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffc21a">
+  <title>Santos Rehber | İşletme ve Hizmet Rehberi</title>
+  <meta name="description" content="Los Santos'un işletme, hizmet ve telefon rehberi.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0e0e10;
+      --panel: #17171a;
+      --panel-2: #202024;
+      --line: #2d2d33;
+      --yellow: #ffc21a;
+      --yellow-dark: #d99e00;
+      --text: #f4f1ea;
+      --muted: #9b978d;
+      --ink: #111111;
+      --red: #ff6b5e;
+      --green: #5fd38d;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #050506;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font-family: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+    input, select, textarea { font-family: inherit; }
+
+    .app {
+      position: relative;
+      width: 100%;
+      max-width: 520px;
+      min-height: 100vh;
+      background: var(--bg);
+      padding-bottom: calc(88px + env(safe-area-inset-bottom));
+      box-shadow: 0 0 80px rgba(0, 0, 0, 0.6);
+    }
+
+    .demo-bar {
+      background: #2a1f00;
+      color: var(--yellow);
+      border-bottom: 1px solid rgba(255, 194, 26, 0.35);
+      font-size: 0.74rem;
+      font-weight: 600;
+      text-align: center;
+      padding: 8px 14px;
+      line-height: 1.4;
+    }
+
+    /* ---------- BAŞLIK ---------- */
+    .hero {
+      position: relative;
+      background: var(--yellow);
+      color: var(--ink);
+      padding: 26px 20px 22px;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      border: 26px solid rgba(17, 17, 17, 0.08);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 8px;
+      background: repeating-linear-gradient(-45deg, var(--ink) 0 10px, var(--yellow) 10px 20px);
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      background: var(--ink);
+      color: var(--yellow);
+      padding: 4px 10px;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.8rem, 15vw, 3.8rem);
+      line-height: 0.88;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+    }
+
+    .hero p {
+      margin-top: 12px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      max-width: 300px;
+      color: rgba(17, 17, 17, 0.8);
+    }
+
+    /* ---------- ARAMA + KATEGORİ ---------- */
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px 10px;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0 14px;
+      height: 48px;
+      transition: border-color 0.25s ease;
+    }
+
+    .search:focus-within { border-color: var(--yellow); }
+    .search svg { flex-shrink: 0; color: var(--muted); }
+
+    .search input {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .search input::placeholder { color: var(--muted); }
+
+    .search-clear {
+      display: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--line);
+      color: var(--text);
+      font-size: 0.8rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-clear.show { display: inline-flex; }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 0 2px;
+      scrollbar-width: none;
+    }
+
+    .chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      white-space: nowrap;
+      transition: all 0.25s var(--ease);
+    }
+
+    .chip.active { background: var(--yellow); border-color: var(--yellow); color: var(--ink); }
+
+    /* ---------- LİSTE ---------- */
+    .list-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 18px 20px 8px;
+    }
+
+    .list-head h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .list-head span { font-size: 0.82rem; color: var(--muted); }
+
+    .list { padding: 6px 16px 10px; display: flex; flex-direction: column; gap: 10px; }
+
+    .card {
+      position: relative;
+      display: flex;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      animation: rise 0.5s var(--ease) both;
+      transition: transform 0.25s var(--ease), border-color 0.25s ease;
+    }
+
+    .card:active { transform: scale(0.985); }
+
+    .card.featured {
+      border-color: rgba(255, 194, 26, 0.55);
+      background: linear-gradient(135deg, rgba(255, 194, 26, 0.1), var(--panel) 55%);
+    }
+
+    .card.hidden-biz { opacity: 0.55; border-style: dashed; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .avatar {
+      width: 54px;
+      height: 54px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      overflow: hidden;
+    }
+
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .card-body { flex: 1; min-width: 0; }
+
+    .card-title { font-size: 1.02rem; font-weight: 700; line-height: 1.25; padding-right: 28px; overflow-wrap: anywhere; }
+
+    .card-cat {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 3px 0 6px;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }
+
+    .card-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 0.8rem; color: var(--text); }
+    .card-meta span { display: inline-flex; align-items: center; gap: 5px; }
+
+    .badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--yellow);
+      color: var(--ink);
+      padding: 3px 7px;
+      border-radius: 5px;
+    }
+
+    .badge.gray { background: var(--line); color: var(--text); }
+
+    .fav-dot { position: absolute; top: 12px; right: 12px; color: var(--yellow); font-size: 1rem; }
+    .card.featured .fav-dot, .card.hidden-biz .fav-dot { top: 38px; }
+
+    .empty { text-align: center; padding: 54px 28px; color: var(--muted); }
+    .empty .big { font-size: 2.6rem; margin-bottom: 10px; }
+    .empty strong { display: block; color: var(--text); font-size: 1.05rem; margin-bottom: 6px; }
+
+    .add-cta {
+      margin: 8px 16px 0;
+      padding: 18px;
+      border: 1.5px dashed rgba(255, 194, 26, 0.5);
+      border-radius: 16px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .add-cta button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 18px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--ink);
+      background: var(--yellow);
+      border-radius: 10px;
+    }
+
+    /* ---------- ALT MENÜ ---------- */
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 520px;
+      z-index: 40;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: rgba(20, 20, 23, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--line);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    }
+
+    .tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 8px 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      border-radius: 12px;
+      transition: color 0.25s ease, background 0.25s ease;
+    }
+
+    .tab .ico { font-size: 1.3rem; line-height: 1; filter: grayscale(1); opacity: 0.7; transition: all 0.25s ease; }
+    .tab.active { color: var(--yellow); background: rgba(255, 194, 26, 0.1); }
+    .tab.active .ico { filter: none; opacity: 1; }
+
+    /* ---------- ALT PENCERE (SHEET) ---------- */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .overlay.open { opacity: 1; visibility: visible; }
+
+    .sheet {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: var(--panel);
+      border-top: 3px solid var(--yellow);
+      border-radius: 24px 24px 0 0;
+      padding: 12px 20px calc(26px + env(safe-area-inset-bottom));
+      transform: translate(-50%, 100%);
+      transition: transform 0.45s var(--ease);
+    }
+
+    .overlay.open .sheet { transform: translate(-50%, 0); }
+
+    .grabber { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+
+    .sheet-close {
+      position: absolute;
+      top: 18px;
+      right: 16px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      font-size: 0.9rem;
+    }
+
+    .sheet-head { display: flex; gap: 14px; align-items: center; padding-right: 36px; }
+    .sheet-head .avatar { width: 62px; height: 62px; font-size: 1.9rem; }
+    .sheet-head h3 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+    .sheet-head .card-cat { margin: 4px 0 0; }
+
+    .sheet-desc { margin: 16px 0 6px; font-size: 0.93rem; line-height: 1.6; color: #d4d0c6; overflow-wrap: anywhere; }
+    .owner-line { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
+
+    .info-row { margin-top: 12px; padding: 14px 16px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; }
+
+    .info-row small {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .info-row .val { font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
+
+    .info-row.phone .val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--yellow);
+      line-height: 1.1;
+      user-select: all;
+      -webkit-user-select: all;
+    }
+
+    .info-row .copy-btn {
+      margin-top: 10px;
+      padding: 9px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 10px;
+      background: var(--yellow);
+      color: var(--ink);
+    }
+
+    .info-row.plain .copy-btn { background: var(--panel); color: var(--text); border: 1px solid var(--line); }
+
+    .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      transition: all 0.25s ease;
+    }
+
+    .btn.primary { background: var(--yellow); border-color: var(--yellow); color: var(--ink); }
+    .btn.fav-on { border-color: var(--yellow); color: var(--yellow); }
+    .btn.danger { border-color: rgba(255, 107, 94, 0.5); color: var(--red); }
+    .btn:disabled { opacity: 0.55; cursor: default; }
+    .btn.block { display: block; width: 100%; margin-top: 12px; }
+
+    .admin-box { margin-top: 16px; padding: 12px; border: 1px dashed rgba(255, 194, 26, 0.45); border-radius: 14px; }
+    .admin-box small { display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--yellow); margin-bottom: 10px; }
+    .admin-box .sheet-actions { margin-top: 0; }
+    .admin-box .btn { padding: 11px 6px; font-size: 0.8rem; }
+
+    .price-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+    .price-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 0.9rem;
+    }
+
+    .price-item b { color: var(--yellow); }
+
+    /* ---------- FORMLAR ---------- */
+    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 18px 0 14px; padding: 5px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; }
+    .seg button { padding: 11px; font-weight: 700; font-size: 0.88rem; border-radius: 10px; color: var(--muted); transition: all 0.25s ease; }
+    .seg button.on { background: var(--yellow); color: var(--ink); }
+
+    .notice {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #e8dcae;
+      background: rgba(255, 194, 26, 0.09);
+      border: 1px solid rgba(255, 194, 26, 0.3);
+      border-radius: 12px;
+    }
+
+    .field { display: block; margin-bottom: 12px; }
+    .field > span { display: block; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .field em { font-style: normal; text-transform: none; letter-spacing: 0; color: #6f6c64; font-weight: 500; }
+
+    .input {
+      width: 100%;
+      padding: 13px 14px;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.25s ease;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .input:focus { border-color: var(--yellow); }
+    textarea.input { resize: vertical; min-height: 92px; line-height: 1.5; }
+    select.input { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 36px; }
+
+    .err { min-height: 1.2em; margin: 2px 0 4px; font-size: 0.84rem; font-weight: 600; color: var(--red); }
+
+    .section-title { margin: 22px 0 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .chip-status { display: inline-block; margin-left: 8px; padding: 2px 8px; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 6px; vertical-align: middle; }
+    .chip-status.ok { background: rgba(95, 211, 141, 0.16); color: var(--green); }
+    .chip-status.no { background: rgba(255, 107, 94, 0.16); color: var(--red); }
+    .profile-line { font-size: 0.82rem; color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(100px + env(safe-area-inset-bottom));
+      transform: translate(-50%, 20px);
+      background: var(--yellow);
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 11px 18px;
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 300;
+      transition: all 0.35s var(--ease);
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="demo-bar" id="demoBar" hidden></div>
+
+    <header class="hero">
+      <span class="hero-tag" id="heroTag">Telefon Rehberi</span>
+      <h1 id="appName">Santos<br>Rehber</h1>
+      <p id="appSub">Şehrin işletme ve hizmet rehberi.</p>
+    </header>
+
+    <div class="sticky-bar">
+      <label class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="searchInput" type="search" placeholder="İşletme, hizmet veya numara ara" autocomplete="off" enterkeyhint="search" aria-label="Ara">
+        <button type="button" class="search-clear" id="searchClear" aria-label="Aramayı temizle">✕</button>
+      </label>
+      <div class="chips" id="chips" role="tablist" aria-label="Kategoriler"></div>
+    </div>
+
+    <div class="list-head">
+      <h2 id="listTitle">Rehber</h2>
+      <span id="listCount"></span>
+    </div>
+
+    <main class="list" id="list"></main>
+
+    <div class="add-cta">
+      Rehberde yer almak ister misiniz?<br>
+      Ücretsiz kayıt olun, işletmenizi kendiniz ekleyin.<br>
+      <button type="button" id="ctaAdd">İşletmeni Ekle</button>
+    </div>
+  </div>
+
+  <nav class="tabbar" aria-label="Ana menü">
+    <button type="button" class="tab active" data-tab="rehber"><span class="ico">📒</span>Rehber</button>
+    <button type="button" class="tab" data-tab="favoriler"><span class="ico">⭐</span>Favoriler</button>
+    <button type="button" class="tab" data-tab="hesap"><span class="ico">👤</span><span id="accountTabLabel">Giriş Yap</span></button>
+  </nav>
+
+  <!-- İŞLETME DETAYI -->
+  <div class="overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-label="İşletme detayı">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <button type="button" class="sheet-close" data-close aria-label="Kapat">✕</button>
+      <div id="detailBody"></div>
+    </div>
+  </div>
+
+  <!-- HESAP -->
+  <div class="overlay" id="accountOverlay" role="dialog" aria-modal="true" aria-label="Hesabım">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <button type="button" class="sheet-close" data-close aria-label="Kapat">✕</button>
+      <div id="accountBody"></div>
+    </div>
+  </div>
+
+  <!-- ÖNE ÇIKAN KAYIT -->
+  <div class="overlay" id="featureOverlay" role="dialog" aria-modal="true" aria-label="Öne çıkan kayıt">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <button type="button" class="sheet-close" data-close aria-label="Kapat">✕</button>
+      <div class="sheet-head">
+        <div class="avatar">⭐</div>
+        <div>
+          <h3>Öne Çıkan Kayıt</h3>
+          <div class="card-cat">Listenin en üstünde yer al</div>
+        </div>
+      </div>
+      <p class="sheet-desc" id="featureText"></p>
+      <div class="price-list" id="priceList"></div>
+      <div class="info-row plain">
+        <small>E-posta</small>
+        <div class="val" id="featureMail"></div>
+        <button type="button" class="copy-btn" data-copy-id="featureMail" data-label="E-posta">Adresi Kopyala</button>
+      </div>
+      <div class="info-row phone">
+        <small>Telefon</small>
+        <div class="val" id="featurePhone"></div>
+        <button type="button" class="copy-btn" data-copy-id="featurePhone" data-label="Numara">Numarayı Kopyala</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ==========================================================
+       AYARLAR: düzenleyeceğin yer burası
+       ========================================================== */
+    const CONFIG = {
+      UYGULAMA_ADI: ["Santos", "Rehber"],
+      ETIKET: "Telefon Rehberi",
+      ALT_BASLIK: "Şehrin işletme ve hizmet rehberi. Aradığın yeri bul, numarayı kopyala.",
+
+      // Firebase ayarlarını buraya yapıştır (KURULUM.md dosyasında anlatılıyor).
+      // Boş bırakırsan uygulama DEMO modunda çalışır: veriler sadece o cihazda durur.
+      FIREBASE: {
+        apiKey: "AIzaSyCkNHmYC9vi6C58zjw4qOzgmhZCcuhFWxI",
+        authDomain: "santos-rehber.firebaseapp.com",
+        projectId: "santos-rehber",
+        storageBucket: "santos-rehber.firebasestorage.app",
+        messagingSenderId: "563771451321",
+        appId: "1:563771451321:web:dce23f46177297f841b868"
+      },
+
+      // Sadece demo modunda: bu e-posta ile kayıt olan hesap yönetici olur.
+      YONETICI_DEMO_EPOSTA: "admin@lossantos.com",
+
+      ONE_CIKAN_METNI: "Kayıt ücretsizdir. İşletmenizi listenin en üstünde, sarı çerçeveyle göstermek için bizimle iletişime geçin.",
+      FIYATLAR: [
+        { ad: "Standart kayıt", fiyat: "Ücretsiz" },
+        { ad: "Öne çıkan kayıt (aylık)", fiyat: "$50.000" }
+      ],
+      ILETISIM: { mail: "sadeceoziv2@lossantos.com", telefon: "2426538" },
+
+      // Kategoriler. Bu listeyi değiştirirsen firestore.rules içindeki kategori listesini de aynı yap.
+      KATEGORI_IKON: {
+        "Emlak & Mimarlık": "🏠",
+        "Araç & Servis": "🔧",
+        "Sağlık": "🏥",
+        "Yeme & İçme": "🍽️",
+        "Eğlence": "🎉",
+        "Hukuk & Finans": "⚖️",
+        "Medya & Haber": "📰",
+        "Ulaşım": "🚕",
+        "Alışveriş": "🛒",
+        "Güzellik & Bakım": "💈",
+        "Eğitim": "🎓",
+        "Kamu": "🏛️"
+      },
+
+      // Sadece demo modunda görünen örnek işletmeler (Firebase bağlıyken kullanılmaz)
+      DEMO_ISLETMELER: [
+        { ad: "Belov Architecture", kategori: "Emlak & Mimarlık", tel: "2426538", adres: "Los Santos", saat: "7/24", aciklama: "Lüks konut, villa ve iç mimari tasarım. 30'dan fazla tamamlanmış proje.", one_cikan: true },
+        { ad: "Santos Oto Servis", kategori: "Araç & Servis", tel: "5550101", adres: "Davis, Strawberry Ave", saat: "09:00 - 23:00", aciklama: "Bakım, onarım, performans yükseltme ve boya hizmetleri.", one_cikan: true },
+        { ad: "Merkez Hastanesi", kategori: "Sağlık", tel: "5550103", adres: "Pillbox Hill", saat: "7/24", aciklama: "Acil servis, muayene ve tedavi hizmetleri.", one_cikan: false },
+        { ad: "Mavi Kedi Kafe", kategori: "Yeme & İçme", tel: "5550104", adres: "Del Perro Plajı", saat: "08:00 - 02:00", aciklama: "Kahve, tatlı ve hafif yemekler. Deniz manzaralı teras.", one_cikan: false },
+        { ad: "Hızlı Taksi", kategori: "Ulaşım", tel: "5550108", adres: "Şehir geneli", saat: "7/24", aciklama: "Havalimanı ve şehir içi ulaşım. Dakikalar içinde kapınızda.", one_cikan: false }
+      ]
+    };
+
+    /* ==========================================================
+       UYGULAMA KODU
+       ========================================================== */
+    (async function () {
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+      const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+      const CATS = Object.keys(CONFIG.KATEGORI_IKON);
+      const FAV_KEY = "santosRehberFavoriler2";
+
+      class AppError extends Error {}
+
+      function esc(v) {
+        return String(v == null ? "" : v).replace(/[&<>"']/g, (c) => (
+          { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+        ));
+      }
+
+      function norm(v) {
+        return String(v == null ? "" : v)
+          .toLocaleLowerCase("tr")
+          .replace(/ı/g, "i")
+          .normalize("NFD")
+          .replace(/[̀-ͯ]/g, "");
+      }
+
+      function icon(kat) { return has(CONFIG.KATEGORI_IKON, kat) ? CONFIG.KATEGORI_IKON[kat] : "📍"; }
+
+      /* ---------- Güvenli depolama (izin yoksa bellekte tutar) ---------- */
+      const mem = {};
+      const store = {
+        get(k, d) {
+          try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }
+          catch (e) { return has(mem, k) ? JSON.parse(mem[k]) : d; }
+        },
+        set(k, v) {
+          const s = JSON.stringify(v);
+          try { localStorage.setItem(k, s); } catch (e) { mem[k] = s; }
+        }
+      };
+
+      function hashDemo(str) {
+        // SADECE demo için basit özet. Gerçek (Firebase) modda şifreleri Google saklar.
+        let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+        for (let i = 0; i < str.length; i++) {
+          const ch = str.charCodeAt(i);
+          h1 = Math.imul(h1 ^ ch, 2654435761);
+          h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+      }
+
+      /* ==========================================================
+         ARKA UÇ 1: DEMO (cihazda saklar)
+         ========================================================== */
+      function createLocalBackend() {
+        const KU = "santosRehberDemoKullanicilar";
+        const KB = "santosRehberDemoIsletmeler";
+        const KS = "santosRehberDemoOturum";
+
+        let biz = store.get(KB, null);
+        if (!biz) {
+          biz = CONFIG.DEMO_ISLETMELER.map((b, i) => Object.assign(
+            { id: "demo" + i, durum: "aktif", sahip: "demo", sahipAd: "rehber" }, b
+          ));
+          store.set(KB, biz);
+        }
+
+        const authCbs = [], bizSubs = [], mineSubs = [];
+        const users = () => store.get(KU, {});
+        const visible = (admin) => biz.filter((b) => admin || b.durum === "aktif").map((b) => Object.assign({}, b));
+        const mineOf = (uid) => { const b = biz.find((x) => x.id === uid); return b ? Object.assign({}, b) : null; };
+
+        function profile(u) {
+          return { uid: u.uid, eposta: u.eposta, kullanici: u.kullanici, tel: u.tel, admin: u.eposta === CONFIG.YONETICI_DEMO_EPOSTA };
+        }
+
+        function currentUser() {
+          const uid = store.get(KS, null);
+          if (!uid) return null;
+          const u = Object.values(users()).find((x) => x.uid === uid);
+          return u ? profile(u) : null;
+        }
+
+        const emitAuth = () => { const u = currentUser(); authCbs.forEach((cb) => cb(u)); };
+        const emitBiz = () => {
+          bizSubs.forEach((s) => s.cb(visible(s.admin)));
+          mineSubs.forEach((s) => s.cb(mineOf(s.uid)));
+        };
+        const persist = () => { store.set(KB, biz); emitBiz(); };
+
+        function remove(list, item) { const i = list.indexOf(item); if (i > -1) list.splice(i, 1); }
+
+        return {
+          mode: "demo",
+
+          onAuth(cb) {
+            authCbs.push(cb);
+            setTimeout(() => cb(currentUser()), 0);
+            return () => remove(authCbs, cb);
+          },
+
+          async signUp(p) {
+            const us = users();
+            if (Object.values(us).some((u) => u.kullanici === p.kullanici)) throw new AppError("Bu kullanıcı adı alınmış.");
+            if (us[p.eposta]) throw new AppError("Bu e-posta ile zaten bir hesap var.");
+            const u = {
+              uid: "u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+              eposta: p.eposta, kullanici: p.kullanici, tel: p.tel, h: hashDemo(p.sifre)
+            };
+            us[p.eposta] = u;
+            store.set(KU, us);
+            store.set(KS, u.uid);
+            const prof = profile(u);
+            emitAuth();
+            return prof;
+          },
+
+          async signIn(eposta, sifre) {
+            const u = users()[eposta];
+            if (!u || u.h !== hashDemo(sifre)) throw new AppError("E-posta veya şifre hatalı.");
+            store.set(KS, u.uid);
+            emitAuth();
+          },
+
+          async signOut() { store.set(KS, null); emitAuth(); },
+
+          subscribe(admin, cb) {
+            const s = { admin, cb };
+            bizSubs.push(s);
+            setTimeout(() => cb(visible(admin)), 0);
+            return () => remove(bizSubs, s);
+          },
+
+          subscribeMine(uid, cb) {
+            const s = { uid, cb };
+            mineSubs.push(s);
+            setTimeout(() => cb(mineOf(uid)), 0);
+            return () => remove(mineSubs, s);
+          },
+
+          async saveBusiness(user, data, exists) {
+            if (!exists) {
+              biz.push(Object.assign({ id: user.uid, durum: "aktif", one_cikan: false, sahip: user.uid, sahipAd: user.kullanici }, data));
+            } else {
+              const b = biz.find((x) => x.id === user.uid);
+              if (b) Object.assign(b, data);
+            }
+            persist();
+          },
+
+          async adminUpdate(id, patch) {
+            const b = biz.find((x) => x.id === id);
+            if (b) Object.assign(b, patch);
+            persist();
+          },
+
+          async deleteBusiness(id) {
+            biz = biz.filter((x) => x.id !== id);
+            persist();
+          }
+        };
+      }
+
+      /* ==========================================================
+         ARKA UÇ 2: FIREBASE (gerçek, herkesle ortak)
+         ========================================================== */
+      async function createFirebaseBackend(cfg) {
+        const base = "https://www.gstatic.com/firebasejs/10.12.2/";
+        const [appM, authM, fsM] = await Promise.all([
+          import(base + "firebase-app.js"),
+          import(base + "firebase-auth.js"),
+          import(base + "firebase-firestore.js")
+        ]);
+
+        const app = appM.initializeApp(cfg);
+        const auth = authM.getAuth(app);
+        const db = fsM.getFirestore(app);
+        let registering = false;
+
+        async function loadProfile(fbUser) {
+          const [u, a] = await Promise.all([
+            fsM.getDoc(fsM.doc(db, "users", fbUser.uid)),
+            fsM.getDoc(fsM.doc(db, "admins", fbUser.uid))
+          ]);
+          const d = u.exists() ? u.data() : {};
+          return {
+            uid: fbUser.uid,
+            eposta: fbUser.email,
+            kullanici: d.kullanici || String(fbUser.email).split("@")[0],
+            tel: d.tel || "",
+            admin: a.exists()
+          };
+        }
+
+        const pack = (snap) => Object.assign({ id: snap.id }, snap.data());
+
+        return {
+          mode: "firebase",
+
+          onAuth(cb) {
+            return authM.onAuthStateChanged(auth, async (u) => {
+              if (registering) return;
+              if (!u) { cb(null); return; }
+              try { cb(await loadProfile(u)); } catch (e) { cb(null); }
+            });
+          },
+
+          async signUp(p) {
+            const nameRef = fsM.doc(db, "usernames", p.kullanici);
+            if ((await fsM.getDoc(nameRef)).exists()) throw new AppError("Bu kullanıcı adı alınmış.");
+            registering = true;
+            let cred = null;
+            try {
+              cred = await authM.createUserWithEmailAndPassword(auth, p.eposta, p.sifre);
+              const batch = fsM.writeBatch(db);
+              batch.set(nameRef, { uid: cred.user.uid });
+              batch.set(fsM.doc(db, "users", cred.user.uid), {
+                kullanici: p.kullanici, eposta: p.eposta, tel: p.tel, olusturma: fsM.serverTimestamp()
+              });
+              await batch.commit();
+            } catch (e) {
+              if (cred && cred.user) { try { await cred.user.delete(); } catch (_) { /* yoksay */ } }
+              registering = false;
+              throw e;
+            }
+            registering = false;
+            return { uid: cred.user.uid, eposta: p.eposta, kullanici: p.kullanici, tel: p.tel, admin: false };
+          },
+
+          async signIn(eposta, sifre) { await authM.signInWithEmailAndPassword(auth, eposta, sifre); },
+          async signOut() { await authM.signOut(auth); },
+
+          subscribe(admin, cb, onError) {
+            const col = fsM.collection(db, "isletmeler");
+            const q = admin ? col : fsM.query(col, fsM.where("durum", "==", "aktif"));
+            return fsM.onSnapshot(q, (snap) => cb(snap.docs.map(pack)), onError);
+          },
+
+          subscribeMine(uid, cb, onError) {
+            return fsM.onSnapshot(fsM.doc(db, "isletmeler", uid), (snap) => cb(snap.exists() ? pack(snap) : null), onError);
+          },
+
+          async saveBusiness(user, data, exists) {
+            const ref = fsM.doc(db, "isletmeler", user.uid);
+            if (!exists) {
+              await fsM.setDoc(ref, Object.assign({}, data, {
+                durum: "aktif", one_cikan: false, sahip: user.uid, sahipAd: user.kullanici,
+                olusturma: fsM.serverTimestamp(), guncelleme: fsM.serverTimestamp()
+              }));
+            } else {
+              await fsM.updateDoc(ref, Object.assign({}, data, { guncelleme: fsM.serverTimestamp() }));
+            }
+          },
+
+          async adminUpdate(id, patch) { await fsM.updateDoc(fsM.doc(db, "isletmeler", id), patch); },
+          async deleteBusiness(id) { await fsM.deleteDoc(fsM.doc(db, "isletmeler", id)); }
+        };
+      }
+
+      /* ---------- Hata mesajları ---------- */
+      function humanError(e) {
+        if (e instanceof AppError) return e.message;
+        const code = e && e.code ? String(e.code) : "";
+        const map = {
+          "auth/email-already-in-use": "Bu e-posta ile zaten bir hesap var.",
+          "auth/invalid-email": "E-posta adresi geçerli değil.",
+          "auth/weak-password": "Şifre çok zayıf, en az 6 karakter olmalı.",
+          "auth/invalid-credential": "E-posta veya şifre hatalı.",
+          "auth/wrong-password": "E-posta veya şifre hatalı.",
+          "auth/user-not-found": "E-posta veya şifre hatalı.",
+          "auth/too-many-requests": "Çok fazla deneme yapıldı, biraz bekleyip tekrar dene.",
+          "auth/network-request-failed": "Bağlantı kurulamadı, internetini kontrol et.",
+          "permission-denied": "Bu işlem için yetkin yok.",
+          "unavailable": "Sunucuya ulaşılamıyor, biraz sonra tekrar dene."
+        };
+        const key = code.replace(/^firestore\//, "");
+        return map[code] || map[key] || "Bir hata oluştu, tekrar dene.";
+      }
+
+      /* ==========================================================
+         DURUM
+         ========================================================== */
+      const state = {
+        kat: "Tümü", q: "", tab: "rehber",
+        favs: new Set(), list: [], listReady: false, loadError: false,
+        user: null, authReady: false, mine: null,
+        formMode: "giris", openId: null
+      };
+
+      try { state.favs = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]")); } catch (e) { /* yoksay */ }
+      function saveFavs() { try { localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(state.favs))); } catch (e) { /* yoksay */ } }
+
+      /* ---------- Arka ucu seç ---------- */
+      let backend;
+      const demoBar = $("demoBar");
+      if (CONFIG.FIREBASE && CONFIG.FIREBASE.apiKey) {
+        try {
+          backend = await createFirebaseBackend(CONFIG.FIREBASE);
+        } catch (e) {
+          backend = createLocalBackend();
+          demoBar.hidden = false;
+          demoBar.textContent = "Sunucuya bağlanılamadı, DEMO modundasın. Kayıtlar sadece bu cihazda durur.";
+        }
+      } else {
+        backend = createLocalBackend();
+        demoBar.hidden = false;
+        demoBar.textContent = "DEMO MODU: kayıtlar sadece bu cihazda durur. Gerçek şifreni yazma.";
+      }
+
+      /* ---------- Başlık ---------- */
+      $("appName").innerHTML = esc(CONFIG.UYGULAMA_ADI[0]) + "<br>" + esc(CONFIG.UYGULAMA_ADI[1]);
+      $("heroTag").textContent = CONFIG.ETIKET;
+      $("appSub").textContent = CONFIG.ALT_BASLIK;
+      document.title = CONFIG.UYGULAMA_ADI.join(" ") + " | İşletme ve Hizmet Rehberi";
+
+      $("featureText").textContent = CONFIG.ONE_CIKAN_METNI;
+      $("featureMail").textContent = CONFIG.ILETISIM.mail;
+      $("featurePhone").textContent = CONFIG.ILETISIM.telefon;
+      $("priceList").innerHTML = CONFIG.FIYATLAR.map((f) =>
+        '<div class="price-item"><span>' + esc(f.ad) + "</span><b>" + esc(f.fiyat) + "</b></div>"
+      ).join("");
+
+      /* ==========================================================
+         LİSTE
+         ========================================================== */
+      function avatarHTML(b) {
+        if (b.logo) {
+          return '<div class="avatar"><img src="' + esc(b.logo) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.textContent=\'' + icon(b.kategori) + '\'"></div>';
+        }
+        return '<div class="avatar">' + icon(b.kategori) + "</div>";
+      }
+
+      function chipCategories() {
+        const present = new Set(state.list.map((b) => b.kategori));
+        return ["Tümü"].concat(CATS.filter((c) => present.has(c)));
+      }
+
+      function renderChips() {
+        const cats = chipCategories();
+        if (cats.indexOf(state.kat) === -1) state.kat = "Tümü";
+        $("chips").innerHTML = cats.map((c) => {
+          const label = c === "Tümü" ? "Tümü" : icon(c) + " " + c;
+          return '<button type="button" class="chip' + (c === state.kat ? " active" : "") + '" role="tab" aria-selected="' + (c === state.kat) + '" data-kat="' + esc(c) + '">' + esc(label) + "</button>";
+        }).join("");
+      }
+
+      function filtered() {
+        const q = norm(state.q.trim());
+        return state.list
+          .filter((b) => state.tab !== "favoriler" || state.favs.has(b.id))
+          .filter((b) => state.kat === "Tümü" || b.kategori === state.kat)
+          .filter((b) => !q || norm([b.ad, b.kategori, b.aciklama, b.adres, b.tel].join(" ")).indexOf(q) !== -1)
+          .sort((a, b) => (Number(!!b.one_cikan) - Number(!!a.one_cikan)) || String(a.ad).localeCompare(String(b.ad), "tr"));
+      }
+
+      function renderList() {
+        $("listTitle").textContent = state.tab === "favoriler" ? "Favorilerim" : (state.kat === "Tümü" ? "Tüm İşletmeler" : state.kat);
+
+        if (!state.listReady) {
+          $("listCount").textContent = "";
+          $("list").innerHTML = '<div class="empty"><div class="big">⏳</div><strong>Yükleniyor</strong>Rehber getiriliyor…</div>';
+          return;
+        }
+
+        if (state.loadError && state.list.length === 0) {
+          $("listCount").textContent = "";
+          $("list").innerHTML = '<div class="empty"><div class="big">📡</div><strong>Rehbere ulaşılamıyor</strong>İnternetini kontrol edip sayfayı yenile.</div>';
+          return;
+        }
+
+        const list = filtered();
+        $("listCount").textContent = list.length + " sonuç";
+
+        if (list.length === 0) {
+          let big = "🔎", title = "Sonuç bulunamadı", text = "Başka bir kelime ya da kategori dene.";
+          if (state.tab === "favoriler" && state.favs.size === 0) {
+            big = "⭐"; title = "Henüz favorin yok"; text = "Bir işletmeyi açıp yıldız butonuna basarak buraya ekleyebilirsin.";
+          } else if (state.list.length === 0) {
+            big = "📒"; title = "Rehber henüz boş"; text = "İlk işletmeyi sen ekle: alttaki Giriş Yap sekmesinden kayıt ol.";
+          }
+          $("list").innerHTML = '<div class="empty"><div class="big">' + big + "</div><strong>" + title + "</strong>" + text + "</div>";
+          return;
+        }
+
+        $("list").innerHTML = list.map((b, i) => {
+          const fav = state.favs.has(b.id);
+          const hid = b.durum === "gizli";
+          return '<button type="button" class="card' + (b.one_cikan ? " featured" : "") + (hid ? " hidden-biz" : "") + '" data-id="' + esc(b.id) + '" style="animation-delay:' + Math.min(i, 8) * 0.04 + 's">' +
+            avatarHTML(b) +
+            '<div class="card-body">' +
+              '<div class="card-title">' + esc(b.ad) + "</div>" +
+              '<div class="card-cat">' + esc(b.kategori) + "</div>" +
+              '<div class="card-desc">' + esc(b.aciklama) + "</div>" +
+              '<div class="card-meta"><span>📞 ' + esc(b.tel) + "</span><span>🕒 " + esc(b.saat) + "</span></div>" +
+            "</div>" +
+            (hid ? '<span class="badge gray">Gizli</span>' : (b.one_cikan ? '<span class="badge">Öne çıkan</span>' : "")) +
+            (fav ? '<span class="fav-dot">★</span>' : "") +
+          "</button>";
+        }).join("");
+      }
+
+      function syncTabs() {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === state.tab));
+        $("accountTabLabel").textContent = state.user ? "Hesabım" : "Giriş Yap";
+      }
+
+      function render() { renderChips(); renderList(); syncTabs(); }
+
+      /* ==========================================================
+         TOAST + KOPYALAMA
+         ========================================================== */
+      let toastTimer = null;
+      function toast(msg) {
+        const t = $("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+        return new Promise((resolve, reject) => {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          let ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+          document.body.removeChild(ta);
+          ok ? resolve() : reject();
+        });
+      }
+
+      function doCopy(text, label) {
+        copyText(String(text))
+          .then(() => toast(label + " kopyalandı"))
+          .catch(() => toast("Kopyalanamadı, basılı tutup seç"));
+      }
+
+      /* ==========================================================
+         PENCERELER
+         ========================================================== */
+      const isOpen = (id) => $(id).classList.contains("open");
+
+      function openOverlay(el) {
+        el.classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeOverlay(el) {
+        if (!el) return;
+        el.classList.remove("open");
+        if (el.id === "detailOverlay") state.openId = null;
+        if (el.id === "accountOverlay" && state.tab === "hesap") { state.tab = state.prevTab || "rehber"; syncTabs(); }
+        if (!document.querySelector(".overlay.open")) document.body.style.overflow = "";
+      }
+
+      function closeTop() {
+        const open = Array.from(document.querySelectorAll(".overlay.open"));
+        closeOverlay(open[open.length - 1]);
+      }
+
+      function openDetail(id) {
+        const b = state.list.find((x) => x.id === id);
+        if (!b) return;
+        state.openId = id;
+        const fav = state.favs.has(id);
+        const admin = !!(state.user && state.user.admin);
+
+        $("detailBody").innerHTML =
+          '<div class="sheet-head">' + avatarHTML(b) +
+            "<div><h3>" + esc(b.ad) + '</h3><div class="card-cat">' + esc(b.kategori) + "</div></div></div>" +
+          '<p class="sheet-desc">' + esc(b.aciklama) + "</p>" +
+          (b.sahipAd ? '<div class="owner-line">Ekleyen: @' + esc(b.sahipAd) + "</div>" : "") +
+          '<div class="info-row phone"><small>Telefon</small><div class="val">' + esc(b.tel) + "</div>" +
+            '<button type="button" class="copy-btn" data-copy="' + esc(b.tel) + '" data-label="Numara">Numarayı Kopyala</button></div>' +
+          '<div class="info-row plain"><small>Adres</small><div class="val">' + esc(b.adres) + "</div>" +
+            '<button type="button" class="copy-btn" data-copy="' + esc(b.adres) + '" data-label="Adres">Adresi Kopyala</button></div>' +
+          '<div class="info-row plain"><small>Çalışma saatleri</small><div class="val">' + esc(b.saat) + "</div></div>" +
+          (admin
+            ? '<div class="admin-box"><small>Yönetici</small><div class="sheet-actions">' +
+                '<button type="button" class="btn" data-admin="feature" data-id="' + esc(id) + '">' + (b.one_cikan ? "Öne çıkarmayı kaldır" : "Öne çıkar") + "</button>" +
+                '<button type="button" class="btn" data-admin="hide" data-id="' + esc(id) + '">' + (b.durum === "gizli" ? "Göster" : "Gizle") + "</button>" +
+                '<button type="button" class="btn danger" data-admin="delete" data-id="' + esc(id) + '">Sil</button>' +
+              "</div></div>"
+            : "") +
+          '<div class="sheet-actions">' +
+            '<button type="button" class="btn' + (fav ? " fav-on" : "") + '" data-fav="' + esc(id) + '">' + (fav ? "★ Favorilerde" : "☆ Favorilere Ekle") + "</button>" +
+            '<button type="button" class="btn primary" data-close>Kapat</button>' +
+          "</div>";
+        openOverlay($("detailOverlay"));
+      }
+
+      function openAccount() {
+        if (state.tab !== "hesap") state.prevTab = state.tab;
+        state.tab = "hesap";
+        syncTabs();
+        renderAccount();
+        openOverlay($("accountOverlay"));
+      }
+
+      /* ==========================================================
+         HESAP EKRANI
+         ========================================================== */
+      function field(label, name, attrs, hint) {
+        return '<label class="field"><span>' + esc(label) + (hint ? " <em>" + esc(hint) + "</em>" : "") + '</span><input class="input" name="' + name + '" ' + attrs + "></label>";
+      }
+
+      function authHTML() {
+        const login = state.formMode === "giris";
+        return '<div class="sheet-head"><div class="avatar">👤</div><div><h3>Hesabım</h3><div class="card-cat">' +
+          (login ? "Giriş yap" : "Ücretsiz kayıt ol") + "</div></div></div>" +
+          '<div class="seg"><button type="button" data-mode="giris" class="' + (login ? "on" : "") + '">Giriş Yap</button>' +
+          '<button type="button" data-mode="kayit" class="' + (!login ? "on" : "") + '">Kayıt Ol</button></div>' +
+          '<div class="notice">⚠️ Bu uygulamaya <b>özel bir şifre</b> belirle. Gerçek hayatta kullandığın bir şifreyi ya da gerçek e-postanı yazma. E-posta olarak oyun içi (IC) bir adres kullan, örneğin <b>isim@lossantos.com</b>.</div>' +
+          (login
+            ? '<form data-form="giris" novalidate>' +
+                field("E-posta", "eposta", 'type="email" autocomplete="username" autocapitalize="none" placeholder="isim@lossantos.com" maxlength="80"') +
+                field("Şifre", "sifre", 'type="password" autocomplete="current-password" maxlength="60"') +
+                '<div class="err"></div><button type="submit" class="btn primary block">Giriş Yap</button></form>'
+            : '<form data-form="kayit" novalidate>' +
+                field("Kullanıcı adı", "kullanici", 'type="text" autocomplete="username" autocapitalize="none" placeholder="ornek.kullanici" maxlength="20"', "(3-20, küçük harf, rakam, . ve _)") +
+                field("E-posta", "eposta", 'type="email" autocomplete="email" autocapitalize="none" placeholder="isim@lossantos.com" maxlength="80"') +
+                field("Telefon no", "tel", 'type="tel" inputmode="numeric" autocomplete="off" placeholder="2426538" maxlength="12"') +
+                field("Şifre", "sifre", 'type="password" autocomplete="new-password" maxlength="60"', "(en az 6 karakter)") +
+                field("Şifre tekrar", "sifre2", 'type="password" autocomplete="new-password" maxlength="60"') +
+                '<div class="err"></div><button type="submit" class="btn primary block">Kayıt Ol</button></form>');
+      }
+
+      function profileHTML() {
+        const u = state.user;
+        const m = state.mine;
+        const catOptions = CATS.map((c) =>
+          '<option value="' + esc(c) + '"' + (m && m.kategori === c ? " selected" : "") + ">" + esc(icon(c) + " " + c) + "</option>"
+        ).join("");
+        const v = (k, d) => esc(m && m[k] != null ? m[k] : d);
+        const status = !m ? "" : (m.durum === "gizli"
+          ? '<span class="chip-status no">Gizlendi</span>'
+          : '<span class="chip-status ok">Yayında</span>');
+
+        return '<div class="sheet-head"><div class="avatar">👤</div><div><h3>@' + esc(u.kullanici) + (u.admin ? ' <span class="chip-status ok">Yönetici</span>' : "") + "</h3>" +
+          '<div class="profile-line">' + esc(u.eposta) + " · " + esc(u.tel || "-") + "</div></div></div>" +
+
+          '<div class="section-title">İşletmen' + status + "</div>" +
+          (m && m.durum === "gizli" ? '<div class="notice">Bu kayıt yönetici tarafından gizlendi. Düzeltme yapmak istersen iletişime geç.</div>' : "") +
+          '<form data-form="isletme" novalidate>' +
+            field("İşletme adı", "ad", 'type="text" maxlength="60" value="' + v("ad", "") + '" placeholder="Örn. Santos Oto Servis"') +
+            '<label class="field"><span>Kategori</span><select class="input" name="kategori">' + catOptions + "</select></label>" +
+            field("İşletme telefonu", "tel", 'type="tel" inputmode="numeric" maxlength="12" value="' + v("tel", u.tel || "") + '"') +
+            field("Adres", "adres", 'type="text" maxlength="80" value="' + v("adres", "") + '" placeholder="Örn. Davis, Strawberry Ave"') +
+            field("Çalışma saatleri", "saat", 'type="text" maxlength="40" value="' + v("saat", "") + '" placeholder="Örn. 09:00 - 23:00 veya 7/24"') +
+            '<label class="field"><span>Açıklama <em>(10-300 karakter)</em></span><textarea class="input" name="aciklama" maxlength="300" placeholder="Ne yapıyorsunuz, hangi hizmetleri veriyorsunuz?">' + v("aciklama", "") + "</textarea></label>" +
+            field("Logo linki", "logo", 'type="url" maxlength="300" value="' + v("logo", "") + '" placeholder="https://i.ibb.co/..."', "(isteğe bağlı, https ile başlamalı)") +
+            '<div class="err"></div>' +
+            '<button type="submit" class="btn primary block">' + (m ? "Değişiklikleri Kaydet" : "Rehbere Ekle (Ücretsiz)") + "</button>" +
+          "</form>" +
+          (m ? '<button type="button" class="btn danger block" data-act="sil">İşletmemi Sil</button>' : "") +
+
+          '<button type="button" class="btn block" data-act="one-cikan">⭐ Öne çıkmak için</button>' +
+          '<button type="button" class="btn block" data-act="cikis">Çıkış Yap</button>';
+      }
+
+      function renderAccount() {
+        const body = $("accountBody");
+        if (!state.authReady) { body.innerHTML = '<p class="sheet-desc">Yükleniyor…</p>'; return; }
+        body.innerHTML = state.user ? profileHTML() : authHTML();
+      }
+
+      /* ---------- Doğrulama ---------- */
+      const RE_USER = /^[a-z0-9_.]{3,20}$/;
+      const RE_MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const cleanTel = (s) => String(s || "").replace(/[\s-]/g, "");
+
+      function readBusiness(form) {
+        const g = (n) => form.elements[n].value.trim();
+        const d = {
+          ad: g("ad"), kategori: g("kategori"), tel: cleanTel(g("tel")),
+          adres: g("adres"), saat: g("saat"), aciklama: g("aciklama"), logo: g("logo")
+        };
+        if (d.ad.length < 2 || d.ad.length > 60) throw new AppError("İşletme adı 2-60 karakter olmalı.");
+        if (CATS.indexOf(d.kategori) === -1) throw new AppError("Bir kategori seç.");
+        if (!/^[0-9]{3,12}$/.test(d.tel)) throw new AppError("Telefon sadece rakam olmalı (3-12 hane).");
+        if (d.adres.length < 2 || d.adres.length > 80) throw new AppError("Adres 2-80 karakter olmalı.");
+        if (d.saat.length < 2 || d.saat.length > 40) throw new AppError("Çalışma saatlerini yaz (örn. 7/24).");
+        if (d.aciklama.length < 10 || d.aciklama.length > 300) throw new AppError("Açıklama 10-300 karakter olmalı.");
+        if (d.logo && !/^https:\/\/\S{1,291}$/.test(d.logo)) throw new AppError("Logo linki https:// ile başlamalı.");
+        return d;
+      }
+
+      function readRegister(form) {
+        const g = (n) => form.elements[n].value.trim();
+        const p = {
+          kullanici: g("kullanici").toLowerCase(),
+          eposta: g("eposta").toLowerCase(),
+          tel: cleanTel(g("tel")),
+          sifre: form.elements.sifre.value,
+          sifre2: form.elements.sifre2.value
+        };
+        if (!RE_USER.test(p.kullanici)) throw new AppError("Kullanıcı adı 3-20 karakter olmalı: küçük harf, rakam, nokta ve alt çizgi.");
+        if (!RE_MAIL.test(p.eposta) || p.eposta.length > 80) throw new AppError("Geçerli bir e-posta yaz (örn. isim@lossantos.com).");
+        if (!/^[0-9]{3,12}$/.test(p.tel)) throw new AppError("Telefon sadece rakam olmalı (3-12 hane).");
+        if (p.sifre.length < 6 || p.sifre.length > 60) throw new AppError("Şifre en az 6 karakter olmalı.");
+        if (p.sifre !== p.sifre2) throw new AppError("Şifreler aynı değil.");
+        return p;
+      }
+
+      /* ---------- Hesap olayları ---------- */
+      let unsubList = null, unsubMine = null;
+
+      function onDataError() {
+        state.loadError = true;
+        state.listReady = true;
+        render();
+      }
+
+      function bindData() {
+        if (unsubList) unsubList();
+        if (unsubMine) unsubMine();
+        state.mine = null;
+        state.listReady = false;
+        state.loadError = false;
+
+        unsubList = backend.subscribe(!!(state.user && state.user.admin), (list) => {
+          state.list = list;
+          state.listReady = true;
+          state.loadError = false;
+          render();
+          if (state.openId && isOpen("detailOverlay")) {
+            if (list.some((b) => b.id === state.openId)) openDetail(state.openId);
+            else closeOverlay($("detailOverlay"));
+          }
+        }, onDataError);
+
+        unsubMine = state.user
+          ? backend.subscribeMine(state.user.uid, (b) => {
+              state.mine = b;
+              if (isOpen("accountOverlay")) renderAccount();
+            }, () => {})
+          : null;
+      }
+
+      function setUser(u) {
+        const changed = (state.user ? state.user.uid + ":" + state.user.admin : "") !== (u ? u.uid + ":" + u.admin : "");
+        state.user = u;
+        state.authReady = true;
+        if (!u) state.formMode = "giris";
+        if (changed || !unsubList) bindData();
+        syncTabs();
+        renderAccount();
+      }
+
+      $("accountBody").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const kind = form.dataset.form;
+        const errEl = form.querySelector(".err");
+        const btn = form.querySelector('button[type="submit"]');
+        const oldLabel = btn.textContent;
+        errEl.textContent = "";
+        btn.disabled = true;
+        btn.textContent = "Lütfen bekle…";
+        try {
+          if (kind === "giris") {
+            const eposta = form.elements.eposta.value.trim().toLowerCase();
+            const sifre = form.elements.sifre.value;
+            if (!RE_MAIL.test(eposta)) throw new AppError("Geçerli bir e-posta yaz.");
+            if (!sifre) throw new AppError("Şifreni yaz.");
+            await backend.signIn(eposta, sifre);
+            toast("Giriş yapıldı");
+          } else if (kind === "kayit") {
+            const p = readRegister(form);
+            const prof = await backend.signUp({ kullanici: p.kullanici, eposta: p.eposta, tel: p.tel, sifre: p.sifre });
+            setUser(prof);
+            toast("Hesabın oluşturuldu");
+          } else if (kind === "isletme") {
+            const data = readBusiness(form);
+            const guncelleme = !!state.mine;
+            await backend.saveBusiness(state.user, data, guncelleme);
+            toast(guncelleme ? "Değişiklikler kaydedildi" : "İşletmen rehbere eklendi");
+          }
+        } catch (err) {
+          errEl.textContent = humanError(err);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = oldLabel;
+        }
+      });
+
+      $("accountBody").addEventListener("click", async (e) => {
+        const modeBtn = e.target.closest("[data-mode]");
+        if (modeBtn) { state.formMode = modeBtn.dataset.mode; renderAccount(); return; }
+
+        const act = e.target.closest("[data-act]");
+        if (!act) return;
+        const what = act.dataset.act;
+
+        if (what === "cikis") {
+          try { await backend.signOut(); toast("Çıkış yapıldı"); } catch (err) { toast(humanError(err)); }
+        } else if (what === "one-cikan") {
+          openOverlay($("featureOverlay"));
+        } else if (what === "sil") {
+          if (act.dataset.armed !== "1") {
+            act.dataset.armed = "1";
+            act.textContent = "Emin misin? Tekrar bas";
+            setTimeout(() => { if (act.isConnected) { act.dataset.armed = ""; act.textContent = "İşletmemi Sil"; } }, 3500);
+            return;
+          }
+          try { await backend.deleteBusiness(state.user.uid); toast("İşletmen silindi"); } catch (err) { toast(humanError(err)); }
+        }
+      });
+
+      /* ==========================================================
+         GENEL OLAYLAR
+         ========================================================== */
+      $("chips").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kat]");
+        if (!btn) return;
+        state.kat = btn.dataset.kat;
+        render();
+      });
+
+      $("list").addEventListener("click", (e) => {
+        const card = e.target.closest("[data-id]");
+        if (card) openDetail(card.dataset.id);
+      });
+
+      const searchInput = $("searchInput");
+      searchInput.addEventListener("input", () => {
+        state.q = searchInput.value;
+        $("searchClear").classList.toggle("show", state.q.length > 0);
+        renderList();
+      });
+
+      $("searchClear").addEventListener("click", () => {
+        searchInput.value = "";
+        state.q = "";
+        $("searchClear").classList.remove("show");
+        renderList();
+        searchInput.focus();
+      });
+
+      document.querySelectorAll(".tab").forEach((t) => {
+        t.addEventListener("click", () => {
+          if (t.dataset.tab === "hesap") { openAccount(); return; }
+          state.tab = t.dataset.tab;
+          render();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      $("ctaAdd").addEventListener("click", openAccount);
+
+      async function handleAdmin(btn) {
+        const id = btn.dataset.id;
+        const act = btn.dataset.admin;
+        const b = state.list.find((x) => x.id === id);
+        if (!b) return;
+
+        if (act === "delete" && btn.dataset.armed !== "1") {
+          btn.dataset.armed = "1";
+          btn.textContent = "Emin misin?";
+          setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ""; btn.textContent = "Sil"; } }, 3000);
+          return;
+        }
+
+        try {
+          if (act === "feature") await backend.adminUpdate(id, { one_cikan: !b.one_cikan });
+          if (act === "hide") await backend.adminUpdate(id, { durum: b.durum === "gizli" ? "aktif" : "gizli" });
+          if (act === "delete") { await backend.deleteBusiness(id); closeOverlay($("detailOverlay")); }
+          toast("Tamam");
+        } catch (err) {
+          toast(humanError(err));
+        }
+      }
+
+      document.addEventListener("click", (e) => {
+        const closeBtn = e.target.closest("[data-close]");
+        if (closeBtn) { closeOverlay(closeBtn.closest(".overlay")); return; }
+        if (e.target.classList && e.target.classList.contains("overlay")) { closeOverlay(e.target); return; }
+
+        const copyBtn = e.target.closest("[data-copy]");
+        if (copyBtn) { doCopy(copyBtn.dataset.copy, copyBtn.dataset.label || "Metin"); return; }
+
+        const copyIdBtn = e.target.closest("[data-copy-id]");
+        if (copyIdBtn) { doCopy($(copyIdBtn.dataset.copyId).textContent, copyIdBtn.dataset.label || "Metin"); return; }
+
+        const adm = e.target.closest("[data-admin]");
+        if (adm) { handleAdmin(adm); return; }
+
+        const favBtn = e.target.closest("[data-fav]");
+        if (favBtn) {
+          const id = favBtn.dataset.fav;
+          if (state.favs.has(id)) { state.favs.delete(id); toast("Favorilerden çıkarıldı"); }
+          else { state.favs.add(id); toast("Favorilere eklendi"); }
+          saveFavs();
+          openDetail(id);
+          renderList();
+        }
+      });
+
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeTop(); });
+
+      /* ---------- Başlat ---------- */
+      render();
+      backend.onAuth((u) => setUser(u));
+    })();
+  </script>
+</body>
+</html>

@@ -777,7 +777,7 @@
 
       function esc(v) {
         return String(v == null ? "" : v).replace(/[&<>"']/g, (c) => (
-          { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+          { "&": "&", "<": "<", ">": ">", '"': """, "'": "'" }[c]
         ));
       }
 
@@ -985,30 +985,42 @@
           },
 
           async signUp(p) {
-            const nameRef = fsM.doc(db, "usernames", p.kullanici);
-            const phoneRef = fsM.doc(db, "phones", p.tel);
+            const cleanUser = p.kullanici.trim().toLowerCase();
+            const cleanPhone = p.tel.replace(/\D/g, "");
+            const cleanEmail = p.eposta.trim().toLowerCase();
+
+            const nameRef = fsM.doc(db, "usernames", cleanUser);
+            const phoneRef = fsM.doc(db, "phones", cleanPhone);
             const taken = await Promise.all([fsM.getDoc(nameRef), fsM.getDoc(phoneRef)]);
             if (taken[0].exists()) throw new AppError("Bu kullanıcı adı alınmış.");
             if (taken[1].exists()) throw new AppError("Bu telefon numarası ile zaten bir hesap var.");
+
             registering = true;
             let cred = null;
             try {
-              cred = await authM.createUserWithEmailAndPassword(auth, p.eposta, p.sifre);
+              cred = await authM.createUserWithEmailAndPassword(auth, cleanEmail, p.sifre);
               const batch = fsM.writeBatch(db);
               batch.set(nameRef, { uid: cred.user.uid });
               batch.set(phoneRef, { uid: cred.user.uid });
               batch.set(fsM.doc(db, "users", cred.user.uid), {
-                kullanici: p.kullanici, eposta: p.eposta, tel: p.tel, olusturma: fsM.serverTimestamp()
+                kullanici: cleanUser,
+                eposta: cleanEmail,
+                tel: cleanPhone,
+                olusturma: fsM.serverTimestamp()
               });
               await batch.commit();
             } catch (e) {
-              if (cred && cred.user) { try { await cred.user.delete(); } catch (_) { /* yoksay */ } }
+              if (cred && cred.user) {
+                try { await cred.user.delete(); } catch (_) { /* yoksay */ }
+              }
               registering = false;
-              if (e && e.code === "permission-denied") throw new AppError("Kullanıcı adı ya da telefon numarası az önce başkası tarafından alındı, tekrar dene.");
+              if (e && e.code === "permission-denied") {
+                throw new AppError("Bu kullanıcı adı veya telefon numarası zaten kullanılıyor.");
+              }
               throw e;
             }
             registering = false;
-            return { uid: cred.user.uid, eposta: p.eposta, kullanici: p.kullanici, tel: p.tel, admin: false };
+            return { uid: cred.user.uid, eposta: cleanEmail, kullanici: cleanUser, tel: cleanPhone, admin: false };
           },
 
           async signIn(eposta, sifre) { await authM.signInWithEmailAndPassword(auth, eposta, sifre); },

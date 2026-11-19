@@ -703,9 +703,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    /* ==========================================================
-       AYARLAR: düzenleyeceğin yer burası
-       ========================================================== */
     const CONFIG = {
       UYGULAMA_ADI: ["Santos", "Rehber"],
       ETIKET: "Telefon Rehberi",
@@ -755,9 +752,6 @@
       ]
     };
 
-    /* ==========================================================
-       UYGULAMA KODU
-       ========================================================== */
     (async function () {
       "use strict";
 
@@ -813,9 +807,6 @@
         return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
       }
 
-      /* ==========================================================
-         ARKA UÇ 1: DEMO
-         ========================================================== */
       function createLocalBackend() {
         const KU = "santosRehberDemoKullanicilar";
         const KB = "santosRehberDemoIsletmeler";
@@ -922,9 +913,6 @@
         };
       }
 
-      /* ==========================================================
-         ARKA UÇ 2: FIREBASE
-         ========================================================== */
       async function createFirebaseBackend(cfg) {
         const base = "https://www.gstatic.com/firebasejs/10.12.2/";
         const [appM, authM, fsM] = await Promise.all([
@@ -1020,7 +1008,6 @@
         };
       }
 
-      /* ---------- Hata mesajları ---------- */
       function humanError(e) {
         if (e instanceof AppError) return e.message;
         const code = e && e.code ? String(e.code) : "";
@@ -1040,9 +1027,6 @@
         return map[code] || map[key] || "Bir hata oluştu, tekrar dene.";
       }
 
-      /* ==========================================================
-         DURUM
-         ========================================================== */
       const state = {
         kat: "Tümü", q: "", tab: "rehber",
         favs: new Set(), list: [], listReady: false, loadError: false,
@@ -1053,10 +1037,22 @@
       try { state.favs = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]")); } catch (e) {}
       function saveFavs() { try { localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(state.favs))); } catch (e) {} }
 
-      let backend = null;
+      let backend;
       const demoBar = $("demoBar");
+      if (CONFIG.FIREBASE && CONFIG.FIREBASE.apiKey) {
+        try {
+          backend = await createFirebaseBackend(CONFIG.FIREBASE);
+        } catch (e) {
+          backend = createLocalBackend();
+          demoBar.hidden = false;
+          demoBar.textContent = "Sunucuya bağlanılamadı, DEMO modundasın. Kayıtlar sadece bu cihazda durur.";
+        }
+      } else {
+        backend = createLocalBackend();
+        demoBar.hidden = false;
+        demoBar.textContent = "DEMO MODU: kayıtlar sadece bu cihazda durur. Gerçek şifreni yazma.";
+      }
 
-      /* ---------- Başlık ---------- */
       $("appName").innerHTML = esc(CONFIG.UYGULAMA_ADI[0]) + "<br>" + esc(CONFIG.UYGULAMA_ADI[1]);
       $("heroTag").textContent = CONFIG.ETIKET;
       $("appSub").textContent = CONFIG.ALT_BASLIK;
@@ -1071,9 +1067,6 @@
         '<div class="price-item"><span>' + esc(f.ad) + "</span><b>" + esc(f.fiyat) + "</b></div>"
       ).join("");
 
-      /* ==========================================================
-         LİSTE
-         ========================================================== */
       function avatarHTML(b) {
         if (b.logo) {
           return '<div class="avatar"><img src="' + esc(b.logo) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.textContent=\'' + icon(b.kategori) + '\'"></div>';
@@ -1166,9 +1159,6 @@
         if (state.openId && isOpen("detailOverlay")) openDetail(state.openId);
       }, FEATURE_TICK_MS);
 
-      /* ==========================================================
-         TOAST + KOPYALAMA
-         ========================================================== */
       let toastTimer = null;
       function toast(msg) {
         const t = $("toast");
@@ -1200,9 +1190,6 @@
           .catch(() => toast("Kopyalanamadı, basılı tutup seç"));
       }
 
-      /* ==========================================================
-         PENCERELER
-         ========================================================== */
       const isOpen = (id) => $(id).classList.contains("open");
 
       function openOverlay(el) {
@@ -1267,9 +1254,6 @@
         openOverlay($("accountOverlay"));
       }
 
-      /* ==========================================================
-         HESAP EKRANI
-         ========================================================== */
       function field(label, name, attrs, hint) {
         return '<label class="field"><span>' + esc(label) + (hint ? " <em>" + esc(hint) + "</em>" : "") + '</span><input class="input" name="' + name + '" ' + attrs + "></label>";
       }
@@ -1355,11 +1339,10 @@
 
       function renderAccount() {
         const body = $("accountBody");
-        if (!state.authReady) { body.innerHTML = '<p class="sheet-desc">Sunucuya bağlanılıyor… (Birkaç saniye sürer)</p>'; return; }
+        if (!state.authReady) { body.innerHTML = '<p class="sheet-desc">Yükleniyor…</p>'; return; }
         body.innerHTML = state.user ? profileHTML() : authHTML();
       }
 
-      /* ---------- Doğrulama ---------- */
       const RE_USER = /^[a-z0-9_.]{3,20}$/;
       const RE_MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const cleanTel = (s) => String(s || "").replace(/[\s-]/g, "");
@@ -1397,7 +1380,6 @@
         return p;
       }
 
-      /* ---------- Hesap olayları ---------- */
       let unsubList = null, unsubMine = null;
 
       function onDataError() {
@@ -1407,7 +1389,6 @@
       }
 
       function bindData() {
-        if (!backend) return;
         if (unsubList) unsubList();
         if (unsubMine) unsubMine();
         state.mine = null;
@@ -1443,12 +1424,8 @@
         renderAccount();
       }
 
-      /* ==========================================================
-         TÜM TIKLAMA VE FORM OLAYLARI (HEMEN BAĞLANIR)
-         ========================================================== */
       $("accountBody").addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!backend) { toast("Henüz sunucuya bağlanıyor, biraz bekle"); return; }
         const form = e.target;
         const kind = form.dataset.form;
         const errEl = form.querySelector(".err");
@@ -1553,7 +1530,7 @@
         const id = btn.dataset.id;
         const act = btn.dataset.admin;
         const b = state.list.find((x) => x.id === id);
-        if (!b || !backend) return;
+        if (!b) return;
 
         if ((act === "delete" || act === "plus") && btn.dataset.armed !== "1") {
           btn.dataset.armed = "1";
@@ -1614,27 +1591,9 @@
 
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeTop(); });
 
-      /* ---------- ÖNCE EKRANI ÇİZ, SONRA FIREBASE'E BAĞLAN ---------- */
       render();
-
-      if (CONFIG.FIREBASE && CONFIG.FIREBASE.apiKey) {
-        try {
-          backend = await createFirebaseBackend(CONFIG.FIREBASE);
-        } catch (e) {
-          backend = createLocalBackend();
-          demoBar.hidden = false;
-          demoBar.textContent = "Sunucuya bağlanılamadı, DEMO modundasın. Kayıtlar sadece bu cihazda durur.";
-        }
-      } else {
-        backend = createLocalBackend();
-        demoBar.hidden = false;
-        demoBar.textContent = "DEMO MODU: kayıtlar sadece bu cihazda durur. Gerçek şifreni yazma.";
-      }
-
       backend.onAuth((u) => setUser(u));
     })();
   </script>
 </body>
 </html>
-
-```

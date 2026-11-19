@@ -711,8 +711,6 @@
       ETIKET: "Telefon Rehberi",
       ALT_BASLIK: "Şehrin işletme ve hizmet rehberi. Aradığın yeri bul, numarayı kopyala.",
 
-      // Firebase ayarlarını buraya yapıştır (KURULUM.md dosyasında anlatılıyor).
-      // Boş bırakırsan uygulama DEMO modunda çalışır: veriler sadece o cihazda durur.
       FIREBASE: {
         apiKey: "AIzaSyCkNHmYC9vi6C58zjw4qOzgmhZCcuhFWxI",
         authDomain: "santos-rehber.firebaseapp.com",
@@ -722,21 +720,17 @@
         appId: "1:563771451321:web:dce23f46177297f841b868"
       },
 
-      // Sadece demo modunda: bu e-posta ile kayıt olan hesap yönetici olur.
       YONETICI_DEMO_EPOSTA: "admin@lossantos.com",
 
-      // Öne çıkarma: yönetici "1 Ay Öne Çıkar" butonuna basınca bu kadar gün eklenir, süre dolunca kendiliğinden biter.
       ONE_CIKAN_GUN: 30,
       ONE_CIKAN_METNI: "Öne çıkan kayıt 30 gün boyunca listenin en üstünde, sarı çerçeveyle görünür. Süre dolunca kayıt kendiliğinden normale döner.",
       FIYATLAR: [
         { ad: "Standart kayıt", fiyat: "Ücretsiz" },
         { ad: "Öne çıkan kayıt (30 gün)", fiyat: "$5.000" }
       ],
-      // Öne çıkarma parası telefondaki Fleeca Bank uygulamasından bu hesaba gönderilir.
       ODEME: { tutar: "$5.000", banka: "Fleeca Bank", alici_etiket: "Fleeca hesap no", alici: "9549" },
       ILETISIM: { mail: "sadeceoziv2@lossantos.com", telefon: "2426538" },
 
-      // Kategoriler. Bu listeyi değiştirirsen firestore.rules içindeki kategori listesini de aynı yap.
       KATEGORI_IKON: {
         "Emlak & Mimarlık": "🏠",
         "Araç & Servis": "🔧",
@@ -752,7 +746,6 @@
         "Kamu": "🏛️"
       },
 
-      // Sadece demo modunda görünen örnek işletmeler (Firebase bağlıyken kullanılmaz)
       DEMO_ISLETMELER: [
         { ad: "Belov Architecture", kategori: "Emlak & Mimarlık", tel: "2426538", adres: "Los Santos", saat: "7/24", aciklama: "Lüks konut, villa ve iç mimari tasarım. 30'dan fazla tamamlanmış proje.", one_cikan: true },
         { ad: "Santos Oto Servis", kategori: "Araç & Servis", tel: "5550101", adres: "Davis, Strawberry Ave", saat: "09:00 - 23:00", aciklama: "Bakım, onarım, performans yükseltme ve boya hizmetleri.", one_cikan: true },
@@ -796,7 +789,6 @@
       const fmtDate = (ms) => new Date(Number(ms)).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
       const daysLeft = (ms) => Math.max(1, Math.ceil((Number(ms) - Date.now()) / DAY));
 
-      /* ---------- Güvenli depolama (izin yoksa bellekte tutar) ---------- */
       const mem = {};
       const store = {
         get(k, d) {
@@ -822,7 +814,7 @@
       }
 
       /* ==========================================================
-         ARKA UÇ 1: DEMO (cihazda saklar)
+         ARKA UÇ 1: DEMO
          ========================================================== */
       function createLocalBackend() {
         const KU = "santosRehberDemoKullanicilar";
@@ -869,13 +861,11 @@
 
         return {
           mode: "demo",
-
           onAuth(cb) {
             authCbs.push(cb);
             setTimeout(() => cb(currentUser()), 0);
             return () => remove(authCbs, cb);
           },
-
           async signUp(p) {
             const us = users();
             if (Object.values(us).some((u) => u.kullanici === p.kullanici)) throw new AppError("Bu kullanıcı adı alınmış.");
@@ -892,30 +882,25 @@
             emitAuth();
             return prof;
           },
-
           async signIn(eposta, sifre) {
             const u = users()[eposta];
             if (!u || u.h !== hashDemo(sifre)) throw new AppError("E-posta veya şifre hatalı.");
             store.set(KS, u.uid);
             emitAuth();
           },
-
           async signOut() { store.set(KS, null); emitAuth(); },
-
           subscribe(admin, cb) {
             const s = { admin, cb };
             bizSubs.push(s);
             setTimeout(() => cb(visible(admin)), 0);
             return () => remove(bizSubs, s);
           },
-
           subscribeMine(uid, cb) {
             const s = { uid, cb };
             mineSubs.push(s);
             setTimeout(() => cb(mineOf(uid)), 0);
             return () => remove(mineSubs, s);
           },
-
           async saveBusiness(user, data, exists) {
             if (!exists) {
               biz.push(Object.assign({ id: user.uid, durum: "aktif", one_cikan_bitis: 0, sahip: user.uid, sahipAd: user.kullanici }, data));
@@ -925,13 +910,11 @@
             }
             persist();
           },
-
           async adminUpdate(id, patch) {
             const b = biz.find((x) => x.id === id);
             if (b) Object.assign(b, patch);
             persist();
           },
-
           async deleteBusiness(id) {
             biz = biz.filter((x) => x.id !== id);
             persist();
@@ -940,7 +923,7 @@
       }
 
       /* ==========================================================
-         ARKA UÇ 2: FIREBASE (gerçek, herkesle ortak)
+         ARKA UÇ 2: FIREBASE
          ========================================================== */
       async function createFirebaseBackend(cfg) {
         const base = "https://www.gstatic.com/firebasejs/10.12.2/";
@@ -974,7 +957,6 @@
 
         return {
           mode: "firebase",
-
           onAuth(cb) {
             return authM.onAuthStateChanged(auth, async (u) => {
               if (registering) return;
@@ -982,7 +964,6 @@
               try { cb(await loadProfile(u)); } catch (e) { cb(null); }
             });
           },
-
           async signUp(p) {
             const cleanUser = p.kullanici.trim().toLowerCase();
             const cleanPhone = p.tel.replace(/\D/g, "");
@@ -1005,7 +986,7 @@
               });
               await batch.commit();
             } catch (e) {
-              if (cred && cred.user) { try { await cred.user.delete(); } catch (_) { /* yoksay */ } }
+              if (cred && cred.user) { try { await cred.user.delete(); } catch (_) {} }
               registering = false;
               if (e && e.code === "permission-denied") throw new AppError("Bu kullanıcı adı veya telefon numarası zaten kullanılıyor.");
               throw e;
@@ -1013,20 +994,16 @@
             registering = false;
             return { uid: cred.user.uid, eposta: cleanEmail, kullanici: cleanUser, tel: cleanPhone, admin: false };
           },
-
           async signIn(eposta, sifre) { await authM.signInWithEmailAndPassword(auth, eposta, sifre); },
           async signOut() { await authM.signOut(auth); },
-
           subscribe(admin, cb, onError) {
             const col = fsM.collection(db, "isletmeler");
             const q = admin ? col : fsM.query(col, fsM.where("durum", "==", "aktif"));
             return fsM.onSnapshot(q, (snap) => cb(snap.docs.map(pack)), onError);
           },
-
           subscribeMine(uid, cb, onError) {
             return fsM.onSnapshot(fsM.doc(db, "isletmeler", uid), (snap) => cb(snap.exists() ? pack(snap) : null), onError);
           },
-
           async saveBusiness(user, data, exists) {
             const ref = fsM.doc(db, "isletmeler", user.uid);
             if (!exists) {
@@ -1038,7 +1015,6 @@
               await fsM.updateDoc(ref, Object.assign({}, data, { guncelleme: fsM.serverTimestamp() }));
             }
           },
-
           async adminUpdate(id, patch) { await fsM.updateDoc(fsM.doc(db, "isletmeler", id), patch); },
           async deleteBusiness(id) { await fsM.deleteDoc(fsM.doc(db, "isletmeler", id)); }
         };
@@ -1074,25 +1050,11 @@
         formMode: "giris", openId: null
       };
 
-      try { state.favs = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]")); } catch (e) { /* yoksay */ }
-      function saveFavs() { try { localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(state.favs))); } catch (e) { /* yoksay */ } }
+      try { state.favs = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]")); } catch (e) {}
+      function saveFavs() { try { localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(state.favs))); } catch (e) {} }
 
-      /* ---------- Arka ucu seç ---------- */
-      let backend;
+      let backend = null;
       const demoBar = $("demoBar");
-      if (CONFIG.FIREBASE && CONFIG.FIREBASE.apiKey) {
-        try {
-          backend = await createFirebaseBackend(CONFIG.FIREBASE);
-        } catch (e) {
-          backend = createLocalBackend();
-          demoBar.hidden = false;
-          demoBar.textContent = "Sunucuya bağlanılamadı, DEMO modundasın. Kayıtlar sadece bu cihazda durur.";
-        }
-      } else {
-        backend = createLocalBackend();
-        demoBar.hidden = false;
-        demoBar.textContent = "DEMO MODU: kayıtlar sadece bu cihazda durur. Gerçek şifreni yazma.";
-      }
 
       /* ---------- Başlık ---------- */
       $("appName").innerHTML = esc(CONFIG.UYGULAMA_ADI[0]) + "<br>" + esc(CONFIG.UYGULAMA_ADI[1]);
@@ -1393,7 +1355,7 @@
 
       function renderAccount() {
         const body = $("accountBody");
-        if (!state.authReady) { body.innerHTML = '<p class="sheet-desc">Yükleniyor…</p>'; return; }
+        if (!state.authReady) { body.innerHTML = '<p class="sheet-desc">Sunucuya bağlanılıyor… (Birkaç saniye sürer)</p>'; return; }
         body.innerHTML = state.user ? profileHTML() : authHTML();
       }
 
@@ -1445,6 +1407,7 @@
       }
 
       function bindData() {
+        if (!backend) return;
         if (unsubList) unsubList();
         if (unsubMine) unsubMine();
         state.mine = null;
@@ -1480,8 +1443,12 @@
         renderAccount();
       }
 
+      /* ==========================================================
+         TÜM TIKLAMA VE FORM OLAYLARI (HEMEN BAĞLANIR)
+         ========================================================== */
       $("accountBody").addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (!backend) { toast("Henüz sunucuya bağlanıyor, biraz bekle"); return; }
         const form = e.target;
         const kind = form.dataset.form;
         const errEl = form.querySelector(".err");
@@ -1543,9 +1510,6 @@
         }
       });
 
-      /* ==========================================================
-         GENEL OLAYLAR
-         ========================================================== */
       $("chips").addEventListener("click", (e) => {
         const btn = e.target.closest("[data-kat]");
         if (!btn) return;
@@ -1589,7 +1553,7 @@
         const id = btn.dataset.id;
         const act = btn.dataset.admin;
         const b = state.list.find((x) => x.id === id);
-        if (!b) return;
+        if (!b || !backend) return;
 
         if ((act === "delete" || act === "plus") && btn.dataset.armed !== "1") {
           btn.dataset.armed = "1";
@@ -1650,10 +1614,27 @@
 
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeTop(); });
 
-      /* ---------- Başlat ---------- */
+      /* ---------- ÖNCE EKRANI ÇİZ, SONRA FIREBASE'E BAĞLAN ---------- */
       render();
+
+      if (CONFIG.FIREBASE && CONFIG.FIREBASE.apiKey) {
+        try {
+          backend = await createFirebaseBackend(CONFIG.FIREBASE);
+        } catch (e) {
+          backend = createLocalBackend();
+          demoBar.hidden = false;
+          demoBar.textContent = "Sunucuya bağlanılamadı, DEMO modundasın. Kayıtlar sadece bu cihazda durur.";
+        }
+      } else {
+        backend = createLocalBackend();
+        demoBar.hidden = false;
+        demoBar.textContent = "DEMO MODU: kayıtlar sadece bu cihazda durur. Gerçek şifreni yazma.";
+      }
+
       backend.onAuth((u) => setUser(u));
     })();
   </script>
 </body>
 </html>
+
+```

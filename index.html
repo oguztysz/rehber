@@ -786,7 +786,7 @@
           .toLocaleLowerCase("tr")
           .replace(/ı/g, "i")
           .normalize("NFD")
-          .replace(/[̀-ͯ]/g, "");
+          .replace(/[\u0300-\u036f]/g, "");
       }
 
       function icon(kat) { return has(CONFIG.KATEGORI_IKON, kat) ? CONFIG.KATEGORI_IKON[kat] : "📍"; }
@@ -810,7 +810,6 @@
       };
 
       function hashDemo(str) {
-        // SADECE demo için basit özet. Gerçek (Firebase) modda şifreleri Google saklar.
         let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
         for (let i = 0; i < str.length; i++) {
           const ch = str.charCodeAt(i);
@@ -994,7 +993,6 @@
             const taken = await Promise.all([fsM.getDoc(nameRef), fsM.getDoc(phoneRef)]);
             if (taken[0].exists()) throw new AppError("Bu kullanıcı adı alınmış.");
             if (taken[1].exists()) throw new AppError("Bu telefon numarası ile zaten bir hesap var.");
-
             registering = true;
             let cred = null;
             try {
@@ -1003,20 +1001,13 @@
               batch.set(nameRef, { uid: cred.user.uid });
               batch.set(phoneRef, { uid: cred.user.uid });
               batch.set(fsM.doc(db, "users", cred.user.uid), {
-                kullanici: cleanUser,
-                eposta: cleanEmail,
-                tel: cleanPhone,
-                olusturma: fsM.serverTimestamp()
+                kullanici: cleanUser, eposta: cleanEmail, tel: cleanPhone, olusturma: fsM.serverTimestamp()
               });
               await batch.commit();
             } catch (e) {
-              if (cred && cred.user) {
-                try { await cred.user.delete(); } catch (_) { /* yoksay */ }
-              }
+              if (cred && cred.user) { try { await cred.user.delete(); } catch (_) { /* yoksay */ } }
               registering = false;
-              if (e && e.code === "permission-denied") {
-                throw new AppError("Bu kullanıcı adı veya telefon numarası zaten kullanılıyor.");
-              }
+              if (e && e.code === "permission-denied") throw new AppError("Bu kullanıcı adı veya telefon numarası zaten kullanılıyor.");
               throw e;
             }
             registering = false;
@@ -1206,7 +1197,6 @@
       const featSignature = () => state.list.filter(isFeatured).map((b) => b.id).sort().join(",");
       function render() { renderChips(); renderList(); syncTabs(); featSig = featSignature(); }
 
-      // Öne çıkarma süresi dolunca sayfa açıkken de kendiliğinden güncellensin
       const FEATURE_TICK_MS = 60000;
       setInterval(() => {
         if (!state.listReady || featSignature() === featSig) return;
@@ -1601,7 +1591,6 @@
         const b = state.list.find((x) => x.id === id);
         if (!b) return;
 
-        // Yanlışlıkla çift basılmasın diye "1 ay ekle" ve "sil" iki aşamalı
         if ((act === "delete" || act === "plus") && btn.dataset.armed !== "1") {
           btn.dataset.armed = "1";
           btn.dataset.orig = btn.textContent;

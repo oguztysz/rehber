@@ -336,6 +336,8 @@
       border-radius: 10px;
     }
 
+    .add-cta #ctaHelp { background: transparent; color: var(--text); border: 1px solid var(--line); display: block; margin: 12px auto 0; }
+
     /* ---------- ALT MENÜ ---------- */
     .tabbar {
       position: fixed;
@@ -548,6 +550,17 @@
     .chip-status.no { background: rgba(255, 107, 94, 0.16); color: var(--red); }
     .profile-line { font-size: 0.82rem; color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
 
+    .input[readonly] { opacity: 0.65; }
+
+    .steps { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .step { display: flex; gap: 14px; padding: 14px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; }
+    .step .num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--yellow); color: var(--ink); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
+    .step > div { min-width: 0; flex: 1; }
+    .step-title { font-size: 0.92rem; font-weight: 600; line-height: 1.45; }
+    .step-sub { margin-top: 3px; font-size: 0.78rem; color: var(--muted); }
+    .step-val { margin-top: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 1.9rem; font-weight: 700; letter-spacing: 0.06em; color: var(--yellow); line-height: 1.1; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
+    .step .copy-btn { margin-top: 10px; padding: 9px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 10px; background: var(--panel); color: var(--text); border: 1px solid var(--line); }
+
     .toast {
       position: fixed;
       left: 50%;
@@ -604,6 +617,7 @@
       Rehberde yer almak ister misiniz?<br>
       Ücretsiz kayıt olun, işletmenizi kendiniz ekleyin.<br>
       <button type="button" id="ctaAdd">İşletmeni Ekle</button>
+      <button type="button" id="ctaHelp" style="margin-top:10px">💬 Sorun mu var? Bize ulaş</button>
     </div>
   </div>
 
@@ -645,15 +659,43 @@
       </div>
       <p class="sheet-desc" id="featureText"></p>
       <div class="price-list" id="priceList"></div>
+      <div id="featureSteps"></div>
+      <div class="section-title" style="margin-top:22px">Sorun yaşarsan</div>
       <div class="info-row plain">
-        <small>E-posta</small>
+        <small>Destek e-postası</small>
         <div class="val" id="featureMail"></div>
         <button type="button" class="copy-btn" data-copy-id="featureMail" data-label="E-posta">Adresi Kopyala</button>
       </div>
       <div class="info-row phone">
-        <small>Telefon</small>
+        <small>Destek telefonu</small>
         <div class="val" id="featurePhone"></div>
         <button type="button" class="copy-btn" data-copy-id="featurePhone" data-label="Numara">Numarayı Kopyala</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESTEK / İLETİŞİM -->
+  <div class="overlay" id="supportOverlay" role="dialog" aria-modal="true" aria-label="İletişim">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <button type="button" class="sheet-close" data-close aria-label="Kapat">✕</button>
+      <div class="sheet-head">
+        <div class="avatar">💬</div>
+        <div>
+          <h3>Bize Ulaş</h3>
+          <div class="card-cat">Herhangi bir sorunda</div>
+        </div>
+      </div>
+      <p class="sheet-desc">Kayıt, ödeme, öne çıkarma ya da başka bir sorunda bize ulaşabilirsin.</p>
+      <div class="info-row phone">
+        <small>Telefon</small>
+        <div class="val" id="supportPhone"></div>
+        <button type="button" class="copy-btn" data-copy-id="supportPhone" data-label="Numara">Numarayı Kopyala</button>
+      </div>
+      <div class="info-row plain">
+        <small>E-posta</small>
+        <div class="val" id="supportMail"></div>
+        <button type="button" class="copy-btn" data-copy-id="supportMail" data-label="E-posta">Adresi Kopyala</button>
       </div>
     </div>
   </div>
@@ -683,11 +725,15 @@
       // Sadece demo modunda: bu e-posta ile kayıt olan hesap yönetici olur.
       YONETICI_DEMO_EPOSTA: "admin@lossantos.com",
 
-      ONE_CIKAN_METNI: "Kayıt ücretsizdir. İşletmenizi listenin en üstünde, sarı çerçeveyle göstermek için bizimle iletişime geçin.",
+      // Öne çıkarma: yönetici "1 Ay Öne Çıkar" butonuna basınca bu kadar gün eklenir, süre dolunca kendiliğinden biter.
+      ONE_CIKAN_GUN: 30,
+      ONE_CIKAN_METNI: "Öne çıkan kayıt 30 gün boyunca listenin en üstünde, sarı çerçeveyle görünür. Süre dolunca kayıt kendiliğinden normale döner.",
       FIYATLAR: [
         { ad: "Standart kayıt", fiyat: "Ücretsiz" },
-        { ad: "Öne çıkan kayıt (aylık)", fiyat: "$50.000" }
+        { ad: "Öne çıkan kayıt (30 gün)", fiyat: "$5.000" }
       ],
+      // Öne çıkarma parası telefondaki Fleeca Bank uygulamasından bu hesaba gönderilir.
+      ODEME: { tutar: "$5.000", banka: "Fleeca Bank", alici_etiket: "Fleeca hesap no", alici: "9549" },
       ILETISIM: { mail: "sadeceoziv2@lossantos.com", telefon: "2426538" },
 
       // Kategoriler. Bu listeyi değiştirirsen firestore.rules içindeki kategori listesini de aynı yap.
@@ -745,6 +791,11 @@
 
       function icon(kat) { return has(CONFIG.KATEGORI_IKON, kat) ? CONFIG.KATEGORI_IKON[kat] : "📍"; }
 
+      const DAY = 86400000;
+      const isFeatured = (b) => Number(b.one_cikan_bitis || 0) > Date.now();
+      const fmtDate = (ms) => new Date(Number(ms)).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+      const daysLeft = (ms) => Math.max(1, Math.ceil((Number(ms) - Date.now()) / DAY));
+
       /* ---------- Güvenli depolama (izin yoksa bellekte tutar) ---------- */
       const mem = {};
       const store = {
@@ -781,9 +832,14 @@
 
         let biz = store.get(KB, null);
         if (!biz) {
-          biz = CONFIG.DEMO_ISLETMELER.map((b, i) => Object.assign(
-            { id: "demo" + i, durum: "aktif", sahip: "demo", sahipAd: "rehber" }, b
-          ));
+          biz = CONFIG.DEMO_ISLETMELER.map((b, i) => {
+            const o = Object.assign({
+              id: "demo" + i, durum: "aktif", sahip: "demo", sahipAd: "rehber",
+              one_cikan_bitis: b.one_cikan ? Date.now() + CONFIG.ONE_CIKAN_GUN * DAY : 0
+            }, b);
+            delete o.one_cikan;
+            return o;
+          });
           store.set(KB, biz);
         }
 
@@ -825,6 +881,7 @@
             const us = users();
             if (Object.values(us).some((u) => u.kullanici === p.kullanici)) throw new AppError("Bu kullanıcı adı alınmış.");
             if (us[p.eposta]) throw new AppError("Bu e-posta ile zaten bir hesap var.");
+            if (Object.values(us).some((u) => u.tel === p.tel)) throw new AppError("Bu telefon numarası ile zaten bir hesap var.");
             const u = {
               uid: "u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
               eposta: p.eposta, kullanici: p.kullanici, tel: p.tel, h: hashDemo(p.sifre)
@@ -862,7 +919,7 @@
 
           async saveBusiness(user, data, exists) {
             if (!exists) {
-              biz.push(Object.assign({ id: user.uid, durum: "aktif", one_cikan: false, sahip: user.uid, sahipAd: user.kullanici }, data));
+              biz.push(Object.assign({ id: user.uid, durum: "aktif", one_cikan_bitis: 0, sahip: user.uid, sahipAd: user.kullanici }, data));
             } else {
               const b = biz.find((x) => x.id === user.uid);
               if (b) Object.assign(b, data);
@@ -929,13 +986,17 @@
 
           async signUp(p) {
             const nameRef = fsM.doc(db, "usernames", p.kullanici);
-            if ((await fsM.getDoc(nameRef)).exists()) throw new AppError("Bu kullanıcı adı alınmış.");
+            const phoneRef = fsM.doc(db, "phones", p.tel);
+            const taken = await Promise.all([fsM.getDoc(nameRef), fsM.getDoc(phoneRef)]);
+            if (taken[0].exists()) throw new AppError("Bu kullanıcı adı alınmış.");
+            if (taken[1].exists()) throw new AppError("Bu telefon numarası ile zaten bir hesap var.");
             registering = true;
             let cred = null;
             try {
               cred = await authM.createUserWithEmailAndPassword(auth, p.eposta, p.sifre);
               const batch = fsM.writeBatch(db);
               batch.set(nameRef, { uid: cred.user.uid });
+              batch.set(phoneRef, { uid: cred.user.uid });
               batch.set(fsM.doc(db, "users", cred.user.uid), {
                 kullanici: p.kullanici, eposta: p.eposta, tel: p.tel, olusturma: fsM.serverTimestamp()
               });
@@ -943,6 +1004,7 @@
             } catch (e) {
               if (cred && cred.user) { try { await cred.user.delete(); } catch (_) { /* yoksay */ } }
               registering = false;
+              if (e && e.code === "permission-denied") throw new AppError("Kullanıcı adı ya da telefon numarası az önce başkası tarafından alındı, tekrar dene.");
               throw e;
             }
             registering = false;
@@ -966,7 +1028,7 @@
             const ref = fsM.doc(db, "isletmeler", user.uid);
             if (!exists) {
               await fsM.setDoc(ref, Object.assign({}, data, {
-                durum: "aktif", one_cikan: false, sahip: user.uid, sahipAd: user.kullanici,
+                durum: "aktif", one_cikan_bitis: 0, sahip: user.uid, sahipAd: user.kullanici,
                 olusturma: fsM.serverTimestamp(), guncelleme: fsM.serverTimestamp()
               }));
             } else {
@@ -1038,6 +1100,8 @@
       $("featureText").textContent = CONFIG.ONE_CIKAN_METNI;
       $("featureMail").textContent = CONFIG.ILETISIM.mail;
       $("featurePhone").textContent = CONFIG.ILETISIM.telefon;
+      $("supportMail").textContent = CONFIG.ILETISIM.mail;
+      $("supportPhone").textContent = CONFIG.ILETISIM.telefon;
       $("priceList").innerHTML = CONFIG.FIYATLAR.map((f) =>
         '<div class="price-item"><span>' + esc(f.ad) + "</span><b>" + esc(f.fiyat) + "</b></div>"
       ).join("");
@@ -1067,12 +1131,12 @@
       }
 
       function filtered() {
-        const q = norm(state.q.trim());
+        const q = norm(state.q.trim().replace(/^@/, ""));
         return state.list
           .filter((b) => state.tab !== "favoriler" || state.favs.has(b.id))
           .filter((b) => state.kat === "Tümü" || b.kategori === state.kat)
-          .filter((b) => !q || norm([b.ad, b.kategori, b.aciklama, b.adres, b.tel].join(" ")).indexOf(q) !== -1)
-          .sort((a, b) => (Number(!!b.one_cikan) - Number(!!a.one_cikan)) || String(a.ad).localeCompare(String(b.ad), "tr"));
+          .filter((b) => !q || norm([b.ad, b.kategori, b.aciklama, b.adres, b.tel, b.sahipAd].join(" ")).indexOf(q) !== -1)
+          .sort((a, b) => (Number(isFeatured(b)) - Number(isFeatured(a))) || String(a.ad).localeCompare(String(b.ad), "tr"));
       }
 
       function renderList() {
@@ -1107,7 +1171,7 @@
         $("list").innerHTML = list.map((b, i) => {
           const fav = state.favs.has(b.id);
           const hid = b.durum === "gizli";
-          return '<button type="button" class="card' + (b.one_cikan ? " featured" : "") + (hid ? " hidden-biz" : "") + '" data-id="' + esc(b.id) + '" style="animation-delay:' + Math.min(i, 8) * 0.04 + 's">' +
+          return '<button type="button" class="card' + (isFeatured(b) ? " featured" : "") + (hid ? " hidden-biz" : "") + '" data-id="' + esc(b.id) + '" style="animation-delay:' + Math.min(i, 8) * 0.04 + 's">' +
             avatarHTML(b) +
             '<div class="card-body">' +
               '<div class="card-title">' + esc(b.ad) + "</div>" +
@@ -1115,7 +1179,7 @@
               '<div class="card-desc">' + esc(b.aciklama) + "</div>" +
               '<div class="card-meta"><span>📞 ' + esc(b.tel) + "</span><span>🕒 " + esc(b.saat) + "</span></div>" +
             "</div>" +
-            (hid ? '<span class="badge gray">Gizli</span>' : (b.one_cikan ? '<span class="badge">Öne çıkan</span>' : "")) +
+            (hid ? '<span class="badge gray">Gizli</span>' : (isFeatured(b) ? '<span class="badge">Öne çıkan</span>' : "")) +
             (fav ? '<span class="fav-dot">★</span>' : "") +
           "</button>";
         }).join("");
@@ -1126,7 +1190,17 @@
         $("accountTabLabel").textContent = state.user ? "Hesabım" : "Giriş Yap";
       }
 
-      function render() { renderChips(); renderList(); syncTabs(); }
+      let featSig = "";
+      const featSignature = () => state.list.filter(isFeatured).map((b) => b.id).sort().join(",");
+      function render() { renderChips(); renderList(); syncTabs(); featSig = featSignature(); }
+
+      // Öne çıkarma süresi dolunca sayfa açıkken de kendiliğinden güncellensin
+      const FEATURE_TICK_MS = 60000;
+      setInterval(() => {
+        if (!state.listReady || featSignature() === featSig) return;
+        render();
+        if (state.openId && isOpen("detailOverlay")) openDetail(state.openId);
+      }, FEATURE_TICK_MS);
 
       /* ==========================================================
          TOAST + KOPYALAMA
@@ -1191,6 +1265,8 @@
         state.openId = id;
         const fav = state.favs.has(id);
         const admin = !!(state.user && state.user.admin);
+        const bitis = Number(b.one_cikan_bitis || 0);
+        const oc = bitis > Date.now();
 
         $("detailBody").innerHTML =
           '<div class="sheet-head">' + avatarHTML(b) +
@@ -1203,11 +1279,14 @@
             '<button type="button" class="copy-btn" data-copy="' + esc(b.adres) + '" data-label="Adres">Adresi Kopyala</button></div>' +
           '<div class="info-row plain"><small>Çalışma saatleri</small><div class="val">' + esc(b.saat) + "</div></div>" +
           (admin
-            ? '<div class="admin-box"><small>Yönetici</small><div class="sheet-actions">' +
-                '<button type="button" class="btn" data-admin="feature" data-id="' + esc(id) + '">' + (b.one_cikan ? "Öne çıkarmayı kaldır" : "Öne çıkar") + "</button>" +
-                '<button type="button" class="btn" data-admin="hide" data-id="' + esc(id) + '">' + (b.durum === "gizli" ? "Göster" : "Gizle") + "</button>" +
-                '<button type="button" class="btn danger" data-admin="delete" data-id="' + esc(id) + '">Sil</button>' +
-              "</div></div>"
+            ? '<div class="admin-box"><small>Yönetici</small>' +
+                '<div class="owner-line">Öne çıkarma: ' + (oc ? "<b>aktif</b>, bitiş " + esc(fmtDate(bitis)) + " (" + daysLeft(bitis) + " gün kaldı)" : "yok") + "</div>" +
+                '<div class="sheet-actions"><button type="button" class="btn primary" data-admin="plus" data-id="' + esc(id) + '">' + (oc ? "+1 Ay Daha Ekle" : "1 Ay Öne Çıkar") + "</button></div>" +
+                '<div class="sheet-actions" style="margin-top:10px">' +
+                  (oc ? '<button type="button" class="btn" data-admin="endfeature" data-id="' + esc(id) + '">Öne çıkarmayı bitir</button>' : "") +
+                  '<button type="button" class="btn" data-admin="hide" data-id="' + esc(id) + '">' + (b.durum === "gizli" ? "Göster" : "Gizle") + "</button>" +
+                  '<button type="button" class="btn danger" data-admin="delete" data-id="' + esc(id) + '">Sil</button>' +
+                "</div></div>"
             : "") +
           '<div class="sheet-actions">' +
             '<button type="button" class="btn' + (fav ? " fav-on" : "") + '" data-fav="' + esc(id) + '">' + (fav ? "★ Favorilerde" : "☆ Favorilere Ekle") + "</button>" +
@@ -1246,7 +1325,7 @@
             : '<form data-form="kayit" novalidate>' +
                 field("Kullanıcı adı", "kullanici", 'type="text" autocomplete="username" autocapitalize="none" placeholder="ornek.kullanici" maxlength="20"', "(3-20, küçük harf, rakam, . ve _)") +
                 field("E-posta", "eposta", 'type="email" autocomplete="email" autocapitalize="none" placeholder="isim@lossantos.com" maxlength="80"') +
-                field("Telefon no", "tel", 'type="tel" inputmode="numeric" autocomplete="off" placeholder="2426538" maxlength="12"') +
+                field("Telefon no", "tel", 'type="tel" inputmode="numeric" autocomplete="off" placeholder="2426538" maxlength="12"', "(bir numarayla tek hesap)") +
                 field("Şifre", "sifre", 'type="password" autocomplete="new-password" maxlength="60"', "(en az 6 karakter)") +
                 field("Şifre tekrar", "sifre2", 'type="password" autocomplete="new-password" maxlength="60"') +
                 '<div class="err"></div><button type="submit" class="btn primary block">Kayıt Ol</button></form>');
@@ -1268,10 +1347,11 @@
 
           '<div class="section-title">İşletmen' + status + "</div>" +
           (m && m.durum === "gizli" ? '<div class="notice">Bu kayıt yönetici tarafından gizlendi. Düzeltme yapmak istersen iletişime geç.</div>' : "") +
+          (m && isFeatured(m) ? '<div class="notice">⭐ Öne çıkarman aktif. Bitiş: <b>' + esc(fmtDate(m.one_cikan_bitis)) + "</b> (" + daysLeft(m.one_cikan_bitis) + " gün kaldı).</div>" : "") +
           '<form data-form="isletme" novalidate>' +
             field("İşletme adı", "ad", 'type="text" maxlength="60" value="' + v("ad", "") + '" placeholder="Örn. Santos Oto Servis"') +
             '<label class="field"><span>Kategori</span><select class="input" name="kategori">' + catOptions + "</select></label>" +
-            field("İşletme telefonu", "tel", 'type="tel" inputmode="numeric" maxlength="12" value="' + v("tel", u.tel || "") + '"') +
+            field("İşletme telefonu", "tel", 'type="tel" readonly value="' + esc(u.tel || "") + '"', "(kayıt telefonun, değişmez)") +
             field("Adres", "adres", 'type="text" maxlength="80" value="' + v("adres", "") + '" placeholder="Örn. Davis, Strawberry Ave"') +
             field("Çalışma saatleri", "saat", 'type="text" maxlength="40" value="' + v("saat", "") + '" placeholder="Örn. 09:00 - 23:00 veya 7/24"') +
             '<label class="field"><span>Açıklama <em>(10-300 karakter)</em></span><textarea class="input" name="aciklama" maxlength="300" placeholder="Ne yapıyorsunuz, hangi hizmetleri veriyorsunuz?">' + v("aciklama", "") + "</textarea></label>" +
@@ -1282,7 +1362,31 @@
           (m ? '<button type="button" class="btn danger block" data-act="sil">İşletmemi Sil</button>' : "") +
 
           '<button type="button" class="btn block" data-act="one-cikan">⭐ Öne çıkmak için</button>' +
+          '<button type="button" class="btn block" data-act="destek">💬 Bize Ulaş</button>' +
           '<button type="button" class="btn block" data-act="cikis">Çıkış Yap</button>';
+      }
+
+      function renderFeatureSteps() {
+        const u = state.user;
+        const o = CONFIG.ODEME;
+        const m = state.mine;
+        const note = u
+          ? '<div class="step-val">@' + esc(u.kullanici) + '</div><button type="button" class="copy-btn" data-copy="@' + esc(u.kullanici) + '" data-label="Not">Notu Kopyala</button>'
+          : '<div class="step-sub">Sana özel notu görmek için önce giriş yap.</div>';
+
+        $("featureSteps").innerHTML =
+          (m && isFeatured(m)
+            ? '<div class="notice" style="margin-top:14px">⭐ Şu an öne çıkarman var, bitiş: <b>' + esc(fmtDate(m.one_cikan_bitis)) + "</b>. Yeni ödeme bu süreyi uzatır.</div>"
+            : "") +
+          '<div class="steps">' +
+            '<div class="step"><span class="num">1</span><div><div class="step-title">Telefondaki <b>' + esc(o.banka) + '</b> uygulamasını aç, <b>' + esc(o.tutar) + "</b> gönder</div>" +
+              '<div class="step-sub">' + esc(o.alici_etiket) + '</div><div class="step-val">' + esc(o.alici) + "</div>" +
+              '<button type="button" class="copy-btn" data-copy="' + esc(o.alici) + '" data-label="Hesap no">Hesap No Kopyala</button></div></div>' +
+            '<div class="step"><span class="num">2</span><div><div class="step-title">Gönderirken <b>Not</b> kısmına şunu yaz:</div>' + note + "</div></div>" +
+            '<div class="step"><span class="num">3</span><div><div class="step-title">Ödemen kontrol edilince kaydın ' + CONFIG.ONE_CIKAN_GUN + ' gün öne çıkar.</div>' +
+              '<div class="step-sub">Süre dolunca kendiliğinden normale döner, bir şey yapman gerekmez.</div></div></div>' +
+          "</div>" +
+          '<div class="notice" style="margin-top:12px">⚠️ <b>Notu yazmayı unutma.</b> Not olmazsa ödemenin hangi işletmeye ait olduğunu bulamayız ve öne çıkarma gecikir.</div>';
       }
 
       function renderAccount() {
@@ -1299,7 +1403,7 @@
       function readBusiness(form) {
         const g = (n) => form.elements[n].value.trim();
         const d = {
-          ad: g("ad"), kategori: g("kategori"), tel: cleanTel(g("tel")),
+          ad: g("ad"), kategori: g("kategori"), tel: String((state.user && state.user.tel) || ""),
           adres: g("adres"), saat: g("saat"), aciklama: g("aciklama"), logo: g("logo")
         };
         if (d.ad.length < 2 || d.ad.length > 60) throw new AppError("İşletme adı 2-60 karakter olmalı.");
@@ -1421,7 +1525,10 @@
 
         if (what === "cikis") {
           try { await backend.signOut(); toast("Çıkış yapıldı"); } catch (err) { toast(humanError(err)); }
+        } else if (what === "destek") {
+          openOverlay($("supportOverlay"));
         } else if (what === "one-cikan") {
+          renderFeatureSteps();
           openOverlay($("featureOverlay"));
         } else if (what === "sil") {
           if (act.dataset.armed !== "1") {
@@ -1474,6 +1581,7 @@
       });
 
       $("ctaAdd").addEventListener("click", openAccount);
+      $("ctaHelp").addEventListener("click", () => openOverlay($("supportOverlay")));
 
       async function handleAdmin(btn) {
         const id = btn.dataset.id;
@@ -1481,20 +1589,36 @@
         const b = state.list.find((x) => x.id === id);
         if (!b) return;
 
-        if (act === "delete" && btn.dataset.armed !== "1") {
+        // Yanlışlıkla çift basılmasın diye "1 ay ekle" ve "sil" iki aşamalı
+        if ((act === "delete" || act === "plus") && btn.dataset.armed !== "1") {
           btn.dataset.armed = "1";
-          btn.textContent = "Emin misin?";
-          setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ""; btn.textContent = "Sil"; } }, 3000);
+          btn.dataset.orig = btn.textContent;
+          btn.textContent = act === "plus" ? "Ödeme geldi mi? Tekrar bas" : "Emin misin?";
+          setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ""; btn.textContent = btn.dataset.orig; } }, 3500);
           return;
         }
 
+        btn.disabled = true;
         try {
-          if (act === "feature") await backend.adminUpdate(id, { one_cikan: !b.one_cikan });
-          if (act === "hide") await backend.adminUpdate(id, { durum: b.durum === "gizli" ? "aktif" : "gizli" });
-          if (act === "delete") { await backend.deleteBusiness(id); closeOverlay($("detailOverlay")); }
-          toast("Tamam");
+          if (act === "plus") {
+            const yeni = Math.max(Date.now(), Number(b.one_cikan_bitis || 0)) + CONFIG.ONE_CIKAN_GUN * DAY;
+            await backend.adminUpdate(id, { one_cikan_bitis: yeni });
+            toast("Öne çıkarma " + fmtDate(yeni) + " tarihine kadar");
+          } else if (act === "endfeature") {
+            await backend.adminUpdate(id, { one_cikan_bitis: 0 });
+            toast("Öne çıkarma bitirildi");
+          } else if (act === "hide") {
+            await backend.adminUpdate(id, { durum: b.durum === "gizli" ? "aktif" : "gizli" });
+            toast("Tamam");
+          } else if (act === "delete") {
+            await backend.deleteBusiness(id);
+            closeOverlay($("detailOverlay"));
+            toast("Silindi");
+          }
         } catch (err) {
           toast(humanError(err));
+        } finally {
+          btn.disabled = false;
         }
       }
 

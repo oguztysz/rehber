@@ -703,11 +703,16 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
+    /* ==========================================================
+       AYARLAR: düzenleyeceğin yer burası
+       ========================================================== */
     const CONFIG = {
       UYGULAMA_ADI: ["Santos", "Rehber"],
       ETIKET: "Telefon Rehberi",
       ALT_BASLIK: "Şehrin işletme ve hizmet rehberi. Aradığın yeri bul, numarayı kopyala.",
 
+      // Firebase ayarlarını buraya yapıştır (KURULUM.md dosyasında anlatılıyor).
+      // Boş bırakırsan uygulama DEMO modunda çalışır: veriler sadece o cihazda durur.
       FIREBASE: {
         apiKey: "AIzaSyCkNHmYC9vi6C58zjw4qOzgmhZCcuhFWxI",
         authDomain: "santos-rehber.firebaseapp.com",
@@ -717,17 +722,21 @@
         appId: "1:563771451321:web:dce23f46177297f841b868"
       },
 
+      // Sadece demo modunda: bu e-posta ile kayıt olan hesap yönetici olur.
       YONETICI_DEMO_EPOSTA: "admin@lossantos.com",
 
+      // Öne çıkarma: yönetici "1 Ay Öne Çıkar" butonuna basınca bu kadar gün eklenir, süre dolunca kendiliğinden biter.
       ONE_CIKAN_GUN: 30,
       ONE_CIKAN_METNI: "Öne çıkan kayıt 30 gün boyunca listenin en üstünde, sarı çerçeveyle görünür. Süre dolunca kayıt kendiliğinden normale döner.",
       FIYATLAR: [
         { ad: "Standart kayıt", fiyat: "Ücretsiz" },
         { ad: "Öne çıkan kayıt (30 gün)", fiyat: "$5.000" }
       ],
+      // Öne çıkarma parası telefondaki Fleeca Bank uygulamasından bu hesaba gönderilir.
       ODEME: { tutar: "$5.000", banka: "Fleeca Bank", alici_etiket: "Fleeca hesap no", alici: "9549" },
       ILETISIM: { mail: "sadeceoziv2@lossantos.com", telefon: "2426538" },
 
+      // Kategoriler. Bu listeyi değiştirirsen firestore.rules içindeki kategori listesini de aynı yap.
       KATEGORI_IKON: {
         "Emlak & Mimarlık": "🏠",
         "Araç & Servis": "🔧",
@@ -743,6 +752,7 @@
         "Kamu": "🏛️"
       },
 
+      // Sadece demo modunda görünen örnek işletmeler (Firebase bağlıyken kullanılmaz)
       DEMO_ISLETMELER: [
         { ad: "Belov Architecture", kategori: "Emlak & Mimarlık", tel: "2426538", adres: "Los Santos", saat: "7/24", aciklama: "Lüks konut, villa ve iç mimari tasarım. 30'dan fazla tamamlanmış proje.", one_cikan: true },
         { ad: "Santos Oto Servis", kategori: "Araç & Servis", tel: "5550101", adres: "Davis, Strawberry Ave", saat: "09:00 - 23:00", aciklama: "Bakım, onarım, performans yükseltme ve boya hizmetleri.", one_cikan: true },
@@ -752,6 +762,9 @@
       ]
     };
 
+    /* ==========================================================
+       UYGULAMA KODU
+       ========================================================== */
     (async function () {
       "use strict";
 
@@ -764,7 +777,7 @@
 
       function esc(v) {
         return String(v == null ? "" : v).replace(/[&<>"']/g, (c) => (
-          { "&": "&", "<": "<", ">": ">", '"': """, "'": "'" }[c]
+          { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
         ));
       }
 
@@ -773,7 +786,7 @@
           .toLocaleLowerCase("tr")
           .replace(/ı/g, "i")
           .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
+          .replace(/[̀-ͯ]/g, "");
       }
 
       function icon(kat) { return has(CONFIG.KATEGORI_IKON, kat) ? CONFIG.KATEGORI_IKON[kat] : "📍"; }
@@ -783,6 +796,7 @@
       const fmtDate = (ms) => new Date(Number(ms)).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
       const daysLeft = (ms) => Math.max(1, Math.ceil((Number(ms) - Date.now()) / DAY));
 
+      /* ---------- Güvenli depolama (izin yoksa bellekte tutar) ---------- */
       const mem = {};
       const store = {
         get(k, d) {
@@ -796,6 +810,7 @@
       };
 
       function hashDemo(str) {
+        // SADECE demo için basit özet. Gerçek (Firebase) modda şifreleri Google saklar.
         let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
         for (let i = 0; i < str.length; i++) {
           const ch = str.charCodeAt(i);
@@ -807,6 +822,9 @@
         return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
       }
 
+      /* ==========================================================
+         ARKA UÇ 1: DEMO (cihazda saklar)
+         ========================================================== */
       function createLocalBackend() {
         const KU = "santosRehberDemoKullanicilar";
         const KB = "santosRehberDemoIsletmeler";
@@ -852,11 +870,13 @@
 
         return {
           mode: "demo",
+
           onAuth(cb) {
             authCbs.push(cb);
             setTimeout(() => cb(currentUser()), 0);
             return () => remove(authCbs, cb);
           },
+
           async signUp(p) {
             const us = users();
             if (Object.values(us).some((u) => u.kullanici === p.kullanici)) throw new AppError("Bu kullanıcı adı alınmış.");
@@ -873,25 +893,30 @@
             emitAuth();
             return prof;
           },
+
           async signIn(eposta, sifre) {
             const u = users()[eposta];
             if (!u || u.h !== hashDemo(sifre)) throw new AppError("E-posta veya şifre hatalı.");
             store.set(KS, u.uid);
             emitAuth();
           },
+
           async signOut() { store.set(KS, null); emitAuth(); },
+
           subscribe(admin, cb) {
             const s = { admin, cb };
             bizSubs.push(s);
             setTimeout(() => cb(visible(admin)), 0);
             return () => remove(bizSubs, s);
           },
+
           subscribeMine(uid, cb) {
             const s = { uid, cb };
             mineSubs.push(s);
             setTimeout(() => cb(mineOf(uid)), 0);
             return () => remove(mineSubs, s);
           },
+
           async saveBusiness(user, data, exists) {
             if (!exists) {
               biz.push(Object.assign({ id: user.uid, durum: "aktif", one_cikan_bitis: 0, sahip: user.uid, sahipAd: user.kullanici }, data));
@@ -901,11 +926,13 @@
             }
             persist();
           },
+
           async adminUpdate(id, patch) {
             const b = biz.find((x) => x.id === id);
             if (b) Object.assign(b, patch);
             persist();
           },
+
           async deleteBusiness(id) {
             biz = biz.filter((x) => x.id !== id);
             persist();
@@ -913,6 +940,9 @@
         };
       }
 
+      /* ==========================================================
+         ARKA UÇ 2: FIREBASE (gerçek, herkesle ortak)
+         ========================================================== */
       async function createFirebaseBackend(cfg) {
         const base = "https://www.gstatic.com/firebasejs/10.12.2/";
         const [appM, authM, fsM] = await Promise.all([
@@ -945,6 +975,7 @@
 
         return {
           mode: "firebase",
+
           onAuth(cb) {
             return authM.onAuthStateChanged(auth, async (u) => {
               if (registering) return;
@@ -952,46 +983,47 @@
               try { cb(await loadProfile(u)); } catch (e) { cb(null); }
             });
           },
-          async signUp(p) {
-            const cleanUser = p.kullanici.trim().toLowerCase();
-            const cleanPhone = p.tel.replace(/\D/g, "");
-            const cleanEmail = p.eposta.trim().toLowerCase();
 
-            const nameRef = fsM.doc(db, "usernames", cleanUser);
-            const phoneRef = fsM.doc(db, "phones", cleanPhone);
+          async signUp(p) {
+            const nameRef = fsM.doc(db, "usernames", p.kullanici);
+            const phoneRef = fsM.doc(db, "phones", p.tel);
             const taken = await Promise.all([fsM.getDoc(nameRef), fsM.getDoc(phoneRef)]);
             if (taken[0].exists()) throw new AppError("Bu kullanıcı adı alınmış.");
             if (taken[1].exists()) throw new AppError("Bu telefon numarası ile zaten bir hesap var.");
             registering = true;
             let cred = null;
             try {
-              cred = await authM.createUserWithEmailAndPassword(auth, cleanEmail, p.sifre);
+              cred = await authM.createUserWithEmailAndPassword(auth, p.eposta, p.sifre);
               const batch = fsM.writeBatch(db);
               batch.set(nameRef, { uid: cred.user.uid });
               batch.set(phoneRef, { uid: cred.user.uid });
               batch.set(fsM.doc(db, "users", cred.user.uid), {
-                kullanici: cleanUser, eposta: cleanEmail, tel: cleanPhone, olusturma: fsM.serverTimestamp()
+                kullanici: p.kullanici, eposta: p.eposta, tel: p.tel, olusturma: fsM.serverTimestamp()
               });
               await batch.commit();
             } catch (e) {
-              if (cred && cred.user) { try { await cred.user.delete(); } catch (_) {} }
+              if (cred && cred.user) { try { await cred.user.delete(); } catch (_) { /* yoksay */ } }
               registering = false;
-              if (e && e.code === "permission-denied") throw new AppError("Bu kullanıcı adı veya telefon numarası zaten kullanılıyor.");
+              if (e && e.code === "permission-denied") throw new AppError("Kullanıcı adı ya da telefon numarası az önce başkası tarafından alındı, tekrar dene.");
               throw e;
             }
             registering = false;
-            return { uid: cred.user.uid, eposta: cleanEmail, kullanici: cleanUser, tel: cleanPhone, admin: false };
+            return { uid: cred.user.uid, eposta: p.eposta, kullanici: p.kullanici, tel: p.tel, admin: false };
           },
+
           async signIn(eposta, sifre) { await authM.signInWithEmailAndPassword(auth, eposta, sifre); },
           async signOut() { await authM.signOut(auth); },
+
           subscribe(admin, cb, onError) {
             const col = fsM.collection(db, "isletmeler");
             const q = admin ? col : fsM.query(col, fsM.where("durum", "==", "aktif"));
             return fsM.onSnapshot(q, (snap) => cb(snap.docs.map(pack)), onError);
           },
+
           subscribeMine(uid, cb, onError) {
             return fsM.onSnapshot(fsM.doc(db, "isletmeler", uid), (snap) => cb(snap.exists() ? pack(snap) : null), onError);
           },
+
           async saveBusiness(user, data, exists) {
             const ref = fsM.doc(db, "isletmeler", user.uid);
             if (!exists) {
@@ -1003,11 +1035,13 @@
               await fsM.updateDoc(ref, Object.assign({}, data, { guncelleme: fsM.serverTimestamp() }));
             }
           },
+
           async adminUpdate(id, patch) { await fsM.updateDoc(fsM.doc(db, "isletmeler", id), patch); },
           async deleteBusiness(id) { await fsM.deleteDoc(fsM.doc(db, "isletmeler", id)); }
         };
       }
 
+      /* ---------- Hata mesajları ---------- */
       function humanError(e) {
         if (e instanceof AppError) return e.message;
         const code = e && e.code ? String(e.code) : "";
@@ -1027,6 +1061,9 @@
         return map[code] || map[key] || "Bir hata oluştu, tekrar dene.";
       }
 
+      /* ==========================================================
+         DURUM
+         ========================================================== */
       const state = {
         kat: "Tümü", q: "", tab: "rehber",
         favs: new Set(), list: [], listReady: false, loadError: false,
@@ -1034,9 +1071,10 @@
         formMode: "giris", openId: null
       };
 
-      try { state.favs = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]")); } catch (e) {}
-      function saveFavs() { try { localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(state.favs))); } catch (e) {} }
+      try { state.favs = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]")); } catch (e) { /* yoksay */ }
+      function saveFavs() { try { localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(state.favs))); } catch (e) { /* yoksay */ } }
 
+      /* ---------- Arka ucu seç ---------- */
       let backend;
       const demoBar = $("demoBar");
       if (CONFIG.FIREBASE && CONFIG.FIREBASE.apiKey) {
@@ -1053,6 +1091,7 @@
         demoBar.textContent = "DEMO MODU: kayıtlar sadece bu cihazda durur. Gerçek şifreni yazma.";
       }
 
+      /* ---------- Başlık ---------- */
       $("appName").innerHTML = esc(CONFIG.UYGULAMA_ADI[0]) + "<br>" + esc(CONFIG.UYGULAMA_ADI[1]);
       $("heroTag").textContent = CONFIG.ETIKET;
       $("appSub").textContent = CONFIG.ALT_BASLIK;
@@ -1067,6 +1106,9 @@
         '<div class="price-item"><span>' + esc(f.ad) + "</span><b>" + esc(f.fiyat) + "</b></div>"
       ).join("");
 
+      /* ==========================================================
+         LİSTE
+         ========================================================== */
       function avatarHTML(b) {
         if (b.logo) {
           return '<div class="avatar"><img src="' + esc(b.logo) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.textContent=\'' + icon(b.kategori) + '\'"></div>';
@@ -1152,6 +1194,7 @@
       const featSignature = () => state.list.filter(isFeatured).map((b) => b.id).sort().join(",");
       function render() { renderChips(); renderList(); syncTabs(); featSig = featSignature(); }
 
+      // Öne çıkarma süresi dolunca sayfa açıkken de kendiliğinden güncellensin
       const FEATURE_TICK_MS = 60000;
       setInterval(() => {
         if (!state.listReady || featSignature() === featSig) return;
@@ -1159,6 +1202,9 @@
         if (state.openId && isOpen("detailOverlay")) openDetail(state.openId);
       }, FEATURE_TICK_MS);
 
+      /* ==========================================================
+         TOAST + KOPYALAMA
+         ========================================================== */
       let toastTimer = null;
       function toast(msg) {
         const t = $("toast");
@@ -1190,6 +1236,9 @@
           .catch(() => toast("Kopyalanamadı, basılı tutup seç"));
       }
 
+      /* ==========================================================
+         PENCERELER
+         ========================================================== */
       const isOpen = (id) => $(id).classList.contains("open");
 
       function openOverlay(el) {
@@ -1254,6 +1303,9 @@
         openOverlay($("accountOverlay"));
       }
 
+      /* ==========================================================
+         HESAP EKRANI
+         ========================================================== */
       function field(label, name, attrs, hint) {
         return '<label class="field"><span>' + esc(label) + (hint ? " <em>" + esc(hint) + "</em>" : "") + '</span><input class="input" name="' + name + '" ' + attrs + "></label>";
       }
@@ -1343,6 +1395,7 @@
         body.innerHTML = state.user ? profileHTML() : authHTML();
       }
 
+      /* ---------- Doğrulama ---------- */
       const RE_USER = /^[a-z0-9_.]{3,20}$/;
       const RE_MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const cleanTel = (s) => String(s || "").replace(/[\s-]/g, "");
@@ -1380,6 +1433,7 @@
         return p;
       }
 
+      /* ---------- Hesap olayları ---------- */
       let unsubList = null, unsubMine = null;
 
       function onDataError() {
@@ -1487,6 +1541,9 @@
         }
       });
 
+      /* ==========================================================
+         GENEL OLAYLAR
+         ========================================================== */
       $("chips").addEventListener("click", (e) => {
         const btn = e.target.closest("[data-kat]");
         if (!btn) return;
@@ -1532,6 +1589,7 @@
         const b = state.list.find((x) => x.id === id);
         if (!b) return;
 
+        // Yanlışlıkla çift basılmasın diye "1 ay ekle" ve "sil" iki aşamalı
         if ((act === "delete" || act === "plus") && btn.dataset.armed !== "1") {
           btn.dataset.armed = "1";
           btn.dataset.orig = btn.textContent;
@@ -1591,6 +1649,7 @@
 
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeTop(); });
 
+      /* ---------- Başlat ---------- */
       render();
       backend.onAuth((u) => setUser(u));
     })();

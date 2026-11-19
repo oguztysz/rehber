@@ -793,6 +793,8 @@
 
       const DAY = 86400000;
       const isFeatured = (b) => Number(b.one_cikan_bitis || 0) > Date.now();
+      const isPinned = (b) => b.sabit === true;
+      const rank = (b) => (isPinned(b) ? 2 : isFeatured(b) ? 1 : 0);
       const fmtDate = (ms) => new Date(Number(ms)).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
       const daysLeft = (ms) => Math.max(1, Math.ceil((Number(ms) - Date.now()) / DAY));
 
@@ -1136,7 +1138,7 @@
           .filter((b) => state.tab !== "favoriler" || state.favs.has(b.id))
           .filter((b) => state.kat === "Tümü" || b.kategori === state.kat)
           .filter((b) => !q || norm([b.ad, b.kategori, b.aciklama, b.adres, b.tel, b.sahipAd].join(" ")).indexOf(q) !== -1)
-          .sort((a, b) => (Number(isFeatured(b)) - Number(isFeatured(a))) || String(a.ad).localeCompare(String(b.ad), "tr"));
+          .sort((a, b) => (rank(b) - rank(a)) || String(a.ad).localeCompare(String(b.ad), "tr"));
       }
 
       function renderList() {
@@ -1171,7 +1173,7 @@
         $("list").innerHTML = list.map((b, i) => {
           const fav = state.favs.has(b.id);
           const hid = b.durum === "gizli";
-          return '<button type="button" class="card' + (isFeatured(b) ? " featured" : "") + (hid ? " hidden-biz" : "") + '" data-id="' + esc(b.id) + '" style="animation-delay:' + Math.min(i, 8) * 0.04 + 's">' +
+          return '<button type="button" class="card' + ((isFeatured(b) || isPinned(b)) ? " featured" : "") + (hid ? " hidden-biz" : "") + '" data-id="' + esc(b.id) + '" style="animation-delay:' + Math.min(i, 8) * 0.04 + 's">' +
             avatarHTML(b) +
             '<div class="card-body">' +
               '<div class="card-title">' + esc(b.ad) + "</div>" +
@@ -1179,7 +1181,7 @@
               '<div class="card-desc">' + esc(b.aciklama) + "</div>" +
               '<div class="card-meta"><span>📞 ' + esc(b.tel) + "</span><span>🕒 " + esc(b.saat) + "</span></div>" +
             "</div>" +
-            (hid ? '<span class="badge gray">Gizli</span>' : (isFeatured(b) ? '<span class="badge">Öne çıkan</span>' : "")) +
+            (hid ? '<span class="badge gray">Gizli</span>' : (isPinned(b) ? '<span class="badge">Öne çıkan</span>' : isFeatured(b) ? '<span class="badge">Öne çıkan</span>' : "")) +
             (fav ? '<span class="fav-dot">★</span>' : "") +
           "</button>";
         }).join("");
@@ -1191,7 +1193,7 @@
       }
 
       let featSig = "";
-      const featSignature = () => state.list.filter(isFeatured).map((b) => b.id).sort().join(",");
+      const featSignature = () => state.list.filter((b) => isFeatured(b) || isPinned(b)).map((b) => b.id).sort().join(",");
       function render() { renderChips(); renderList(); syncTabs(); featSig = featSignature(); }
 
       // Öne çıkarma süresi dolunca sayfa açıkken de kendiliğinden güncellensin
@@ -1284,6 +1286,7 @@
                 '<div class="sheet-actions"><button type="button" class="btn primary" data-admin="plus" data-id="' + esc(id) + '">' + (oc ? "+1 Ay Daha Ekle" : "1 Ay Öne Çıkar") + "</button></div>" +
                 '<div class="sheet-actions" style="margin-top:10px">' +
                   (oc ? '<button type="button" class="btn" data-admin="endfeature" data-id="' + esc(id) + '">Öne çıkarmayı bitir</button>' : "") +
+                  '<button type="button" class="btn" data-admin="pin" data-id="' + esc(id) + '">' + (b.sabit === true ? "Sabitlemeyi kaldır" : "📌 En üste sabitle") + "</button>" +
                   '<button type="button" class="btn" data-admin="hide" data-id="' + esc(id) + '">' + (b.durum === "gizli" ? "Göster" : "Gizle") + "</button>" +
                   '<button type="button" class="btn danger" data-admin="delete" data-id="' + esc(id) + '">Sil</button>' +
                 "</div></div>"
@@ -1607,6 +1610,9 @@
           } else if (act === "endfeature") {
             await backend.adminUpdate(id, { one_cikan_bitis: 0 });
             toast("Öne çıkarma bitirildi");
+          } else if (act === "pin") {
+            await backend.adminUpdate(id, { sabit: b.sabit !== true });
+            toast(b.sabit === true ? "Sabitleme kaldırıldı" : "En üste sabitlendi");
           } else if (act === "hide") {
             await backend.adminUpdate(id, { durum: b.durum === "gizli" ? "aktif" : "gizli" });
             toast("Tamam");
